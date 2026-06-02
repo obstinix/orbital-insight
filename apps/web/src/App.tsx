@@ -239,6 +239,7 @@ const TopHudStats: React.FC = () => {
 
   return (
     <div
+      aria-label="HUD telemetry statistics"
       style={{
         position: 'absolute',
         top: 'var(--space-2)',
@@ -280,6 +281,7 @@ const LeftNavigationPanel: React.FC = () => {
 
   return (
     <nav
+      aria-label="HUD primary navigation"
       style={{
         position: 'absolute',
         left: 'var(--space-2)',
@@ -297,17 +299,18 @@ const LeftNavigationPanel: React.FC = () => {
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
       }}
     >
-      <div
+      <h1
         style={{
           fontFamily: 'var(--font-display)',
           fontSize: '0.75rem',
           color: 'var(--color-muted)',
           marginBottom: 'var(--space-1)',
           letterSpacing: '2px',
+          margin: '0 0 var(--space-1) 0',
         }}
       >
         ORBITAL INSIGHT
-      </div>
+      </h1>
       {links.map((link) => {
         const isActive = location.pathname === link.path;
         return (
@@ -351,9 +354,9 @@ const panelStyle: React.CSSProperties = {
 
 // Route View wrappers
 const UniverseView: React.FC = () => (
-  <div style={panelStyle}>
-    <h2>Solar System Orbit</h2>
-    <p style={{ color: 'var(--color-muted)', marginTop: '0.5rem' }}>
+  <div style={panelStyle} aria-labelledby="universe-title">
+    <h2 id="universe-title" style={{ fontSize: '1.2rem', color: '#fff', marginBottom: '0.5rem' }}>Solar System Orbit</h2>
+    <p style={{ color: 'var(--color-muted)', fontSize: '0.9rem', lineHeight: '1.4' }}>
       Click and drag the central wireframe sphere to orbit. Scroll to zoom in/out.
     </p>
   </div>
