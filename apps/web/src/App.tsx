@@ -11,6 +11,7 @@ import { RayCaster } from './engine/interaction/RayCaster';
 import { InfoPanel } from './ui/InfoPanel';
 import { TimeController } from './engine/simulation/TimeController';
 import { TimeControls } from './ui/TimeControls';
+import { SpacecraftController } from './spacecraft/SpacecraftController';
 import { usePlanetStore } from './store/usePlanetStore';
 import { useEngineStore } from './store/useEngineStore';
 import { usePerformanceStore } from './store/usePerformanceStore';
@@ -47,13 +48,16 @@ const ThreeCanvas: React.FC = () => {
 
     const raycaster = new RayCaster(camera, sceneGraph.scene, canvas, solarSystem.planets);
 
+    const spacecraft = new SpacecraftController(sceneGraph.scene, camera);
+
     // 3. Register systems globally
     useEngineStore.getState().initEngine(
       renderer,
       sceneGraph.scene,
       camera,
       cameraController,
-      sceneGraph
+      sceneGraph,
+      spacecraft
     );
 
     const timeController = new TimeController();
@@ -71,6 +75,9 @@ const ThreeCanvas: React.FC = () => {
       
       // Update starfield twinkle cycles
       starField.update(elapsedSeconds);
+
+      // Update spacecraft FSM and animations
+      spacecraft.update(elapsedSeconds);
 
       // Update camera systems (dampening)
       cameraController.update();
@@ -95,6 +102,7 @@ const ThreeCanvas: React.FC = () => {
       starField.dispose();
       solarSystem.dispose();
       raycaster.dispose();
+      spacecraft.dispose();
       renderer.dispose();
     };
   }, [isInitialized]);
