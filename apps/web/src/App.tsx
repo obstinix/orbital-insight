@@ -15,16 +15,26 @@ import { SpacecraftController } from './spacecraft/SpacecraftController';
 import { GuideChatPanel } from './ui/GuideChatPanel';
 import { JourneyMode } from './modes/JourneyMode';
 import { ChapterSelector } from './ui/ChapterSelector';
-import { ConstellationPanel } from './ui/ConstellationPanel';
 import { ConstellationLines } from './engine/bodies/ConstellationLines';
 import { useConstellationStore } from './store/useConstellationStore';
-import { ExoplanetPanel } from './ui/ExoplanetPanel';
 import { ExoplanetRenderer } from './engine/bodies/ExoplanetRenderer';
 import { useExoplanetStore } from './store/useExoplanetStore';
 import { SpacecraftTracker } from './engine/bodies/SpacecraftTracker';
-import { MissionsPanel } from './ui/MissionsPanel';
 import { SpecialEvents } from './engine/bodies/SpecialEvents';
-import { AchievementsPanel } from './ui/AchievementsPanel';
+
+// Lazy-loaded route panels for performance optimizations
+const ConstellationPanel = React.lazy(() => 
+  import('./ui/ConstellationPanel').then(m => ({ default: m.ConstellationPanel }))
+);
+const ExoplanetPanel = React.lazy(() => 
+  import('./ui/ExoplanetPanel').then(m => ({ default: m.ExoplanetPanel }))
+);
+const MissionsPanel = React.lazy(() => 
+  import('./ui/MissionsPanel').then(m => ({ default: m.MissionsPanel }))
+);
+const AchievementsPanel = React.lazy(() => 
+  import('./ui/AchievementsPanel').then(m => ({ default: m.AchievementsPanel }))
+);
 import { AchievementToast } from './ui/AchievementToast';
 import { useAchievementStore } from './store/useAchievementStore';
 import { useJourneyStore } from './store/useJourneyStore';
@@ -336,7 +346,7 @@ const panelStyle: React.CSSProperties = {
   padding: '1.5rem',
   borderRadius: '8px',
   boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)',
-  animation: 'slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both',
+  animation: 'slideIn var(--duration-medium) var(--ease-warp) both',
 };
 
 // Route View wrappers
@@ -349,10 +359,55 @@ const UniverseView: React.FC = () => (
   </div>
 );
 
-
-
-
-
+// Holographic system loading HUD spinner
+const PanelLoader: React.FC = () => {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top: 'var(--space-2)',
+        right: 'var(--space-2)',
+        width: '320px',
+        height: '200px',
+        zIndex: 'var(--z-panel)',
+        background: 'rgba(10, 14, 42, 0.65)',
+        backdropFilter: 'blur(16px)',
+        border: '1px solid rgba(0, 188, 212, 0.3)',
+        borderRadius: '8px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '1rem',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 188, 212, 0.1)',
+      }}
+    >
+      <div
+        style={{
+          width: '40px',
+          height: '40px',
+          border: '3px solid rgba(0, 188, 212, 0.15)',
+          borderTopColor: 'var(--color-teal-cyan)',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+          filter: 'drop-shadow(0 0 8px var(--color-teal-cyan))',
+        }}
+      />
+      <div
+        style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: '0.8rem',
+          color: 'var(--color-teal-cyan)',
+          letterSpacing: '2px',
+          textShadow: '0 0 8px rgba(0, 188, 212, 0.5)',
+          animation: 'pulse-text 1.5s ease-in-out infinite',
+        }}
+      >
+        LOADING SYSTEM HUD...
+      </div>
+    </div>
+  );
+};
 
 // ── ROOT APP ENTRY ───────────────────────────────────────────────
 export default function App() {
@@ -405,15 +460,17 @@ export default function App() {
         <GuideChatPanel />
         <AchievementToast />
 
-        {/* Router-controlled HUD overlays */}
-        <Routes>
-          <Route path="/" element={<UniverseView />} />
-          <Route path="/journey" element={<ChapterSelector />} />
-          <Route path="/constellations" element={<ConstellationPanel />} />
-          <Route path="/exoplanets" element={<ExoplanetPanel />} />
-          <Route path="/missions" element={<MissionsPanel />} />
-          <Route path="/achievements" element={<AchievementsPanel />} />
-        </Routes>
+        {/* Router-controlled HUD overlays wrapped in dynamic loader */}
+        <React.Suspense fallback={<PanelLoader />}>
+          <Routes>
+            <Route path="/" element={<UniverseView />} />
+            <Route path="/journey" element={<ChapterSelector />} />
+            <Route path="/constellations" element={<ConstellationPanel />} />
+            <Route path="/exoplanets" element={<ExoplanetPanel />} />
+            <Route path="/missions" element={<MissionsPanel />} />
+            <Route path="/achievements" element={<AchievementsPanel />} />
+          </Routes>
+        </React.Suspense>
       </div>
     </HashRouter>
   );
