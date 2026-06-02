@@ -107,6 +107,8 @@ export const ConstellationPanel: React.FC = () => {
 
   return (
     <div
+      role="region"
+      aria-label="Constellation Mapper HUD"
       style={{
         position: 'absolute',
         top: 'var(--space-2)',
@@ -168,6 +170,7 @@ export const ConstellationPanel: React.FC = () => {
         {/* Locate/Detect Button */}
         <button
           onClick={handleDetectLocation}
+          aria-label="Detect current location and align night sky position"
           style={{
             background: 'rgba(0, 240, 255, 0.1)',
             border: '1px solid rgba(0, 240, 255, 0.4)',
@@ -191,6 +194,7 @@ export const ConstellationPanel: React.FC = () => {
 
         {/* Visibility Toggle */}
         <label
+          htmlFor="render-constellations-checkbox"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -203,6 +207,7 @@ export const ConstellationPanel: React.FC = () => {
           }}
         >
           <input
+            id="render-constellations-checkbox"
             type="checkbox"
             checked={showConstellations}
             onChange={(e) => {
@@ -272,6 +277,8 @@ export const ConstellationPanel: React.FC = () => {
                   </span>
                   <button
                     onClick={() => handleConstellationClick(c.id)}
+                    aria-label={`Lock target to ${c.name} constellation`}
+                    aria-pressed={isSelected}
                     style={{
                       background: 'transparent',
                       border: 'none',
