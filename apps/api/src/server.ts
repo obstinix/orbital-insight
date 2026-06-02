@@ -6,6 +6,8 @@ import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import { Type } from '@sinclair/typebox';
 import guideRoutes from './routes/guide.js';
+import missionRoutes from './routes/missions.js';
+
 
 const fastify = Fastify({
   logger: {
@@ -66,6 +68,7 @@ const bootstrap = async () => {
 
   // Register guide proxy routes
   await fastify.register(guideRoutes, { prefix: '/api' });
+  await fastify.register(missionRoutes, { prefix: '/api' });
 
   // Health endpoint with TypeBox Schema Validation
   fastify.get(
