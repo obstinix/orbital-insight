@@ -21,6 +21,8 @@ import { useConstellationStore } from './store/useConstellationStore';
 import { ExoplanetPanel } from './ui/ExoplanetPanel';
 import { ExoplanetRenderer } from './engine/bodies/ExoplanetRenderer';
 import { useExoplanetStore } from './store/useExoplanetStore';
+import { SpacecraftTracker } from './engine/bodies/SpacecraftTracker';
+import { MissionsPanel } from './ui/MissionsPanel';
 import { usePlanetStore } from './store/usePlanetStore';
 import { useEngineStore } from './store/useEngineStore';
 import { usePerformanceStore } from './store/usePerformanceStore';
@@ -61,6 +63,16 @@ const ThreeCanvas: React.FC = () => {
 
     const solarSystem = new SolarSystem();
     sceneGraph.addObject(solarSystem.group, SceneLayer.PLANETS);
+
+    const earthPlanet = solarSystem.planets.find((p) => p.id === 'earth');
+    let spacecraftTracker: SpacecraftTracker | null = null;
+    if (earthPlanet) {
+      spacecraftTracker = new SpacecraftTracker(
+        earthPlanet.group,
+        earthPlanet.bodyMesh,
+        sceneGraph.scene
+      );
+    }
 
     const exoplanetRenderer = new ExoplanetRenderer();
     sceneGraph.addObject(exoplanetRenderer.mesh, SceneLayer.PLANETS);
@@ -110,6 +122,10 @@ const ThreeCanvas: React.FC = () => {
       } else {
         // Update solar system positions and animations
         solarSystem.update(simulatedDate, elapsedSeconds);
+      }
+
+      if (spacecraftTracker) {
+        spacecraftTracker.update(elapsedSeconds);
       }
       
       // Update starfield twinkle cycles
@@ -163,6 +179,9 @@ const ThreeCanvas: React.FC = () => {
       solarSystem.dispose();
       raycaster.dispose();
       spacecraft.dispose();
+      if (spacecraftTracker) {
+        spacecraftTracker.dispose();
+      }
       constellationLines.dispose();
       exoplanetRenderer.dispose();
       renderer.dispose();
@@ -309,14 +328,6 @@ const UniverseView: React.FC = () => (
 
 
 
-const MissionsView: React.FC = () => (
-  <div style={panelStyle}>
-    <h2>Live Trackers</h2>
-    <p style={{ color: 'var(--color-muted)', marginTop: '0.5rem' }}>
-      Visualize real-time orbital path trajectories of spacecraft and active satellite missions.
-    </p>
-  </div>
-);
 
 const AchievementsView: React.FC = () => (
   <div style={panelStyle}>
@@ -386,7 +397,7 @@ export default function App() {
           <Route path="/journey" element={<ChapterSelector />} />
           <Route path="/constellations" element={<ConstellationPanel />} />
           <Route path="/exoplanets" element={<ExoplanetPanel />} />
-          <Route path="/missions" element={<MissionsView />} />
+          <Route path="/missions" element={<MissionsPanel />} />
           <Route path="/achievements" element={<AchievementsView />} />
         </Routes>
       </div>
