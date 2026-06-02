@@ -54,6 +54,8 @@ export const TimeControls: React.FC = () => {
 
   return (
     <div
+      role="region"
+      aria-label="Simulation Time Controls"
       style={{
         position: 'absolute',
         bottom: 'var(--space-2)',
@@ -70,6 +72,8 @@ export const TimeControls: React.FC = () => {
       {/* Visual Event Trigger Drawer */}
       {showEventDrawer && (
         <div
+          role="group"
+          aria-label="Special Visual Events Options"
           style={{
             background: 'rgba(10, 14, 42, 0.85)',
             backdropFilter: 'blur(16px)',
@@ -86,6 +90,7 @@ export const TimeControls: React.FC = () => {
           {/* Meteor Shower Button */}
           <button
             onClick={() => triggerMeteorShower(!isMeteorActive)}
+            aria-label={`Trigger Meteor Shower: ${isMeteorActive ? 'active' : 'inactive'}`}
             style={eventBtnStyle(isMeteorActive, '#00ffff')}
           >
             ☄️ METEOR SHOWER: {isMeteorActive ? 'ON' : 'OFF'}
@@ -95,6 +100,7 @@ export const TimeControls: React.FC = () => {
           <button
             onClick={triggerComet}
             disabled={isCometActive}
+            aria-label="Trigger Comet sweep trajectory"
             style={eventBtnStyle(isCometActive, '#ffffff')}
           >
             ☄️ SWEEP COMET
@@ -103,6 +109,7 @@ export const TimeControls: React.FC = () => {
           {/* Solar Eclipse Button */}
           <button
             onClick={() => triggerEclipse(!isEclipseActive)}
+            aria-label={`Trigger Solar Eclipse alignment solver: ${isEclipseActive ? 'active' : 'inactive'}`}
             style={eventBtnStyle(isEclipseActive, '#ffaa00')}
           >
             🌑 ECLIPSE ALIGN: {isEclipseActive ? 'ON' : 'OFF'}
@@ -112,6 +119,7 @@ export const TimeControls: React.FC = () => {
           <button
             onClick={triggerSupernova}
             disabled={isSupernovaActive}
+            aria-label="Trigger Supernova stellar explosion particles"
             style={eventBtnStyle(isSupernovaActive, '#ff3366')}
           >
             💥 EXPLODE SUPERNOVA
@@ -171,7 +179,10 @@ export const TimeControls: React.FC = () => {
           </button>
 
           {/* Speed selectors */}
-          <div style={{ display: 'flex', gap: '2px', background: 'rgba(5, 8, 16, 0.5)', padding: '2px', borderRadius: '4px' }}>
+          <div 
+            aria-label="Simulation speed multiplier selectors"
+            style={{ display: 'flex', gap: '2px', background: 'rgba(5, 8, 16, 0.5)', padding: '2px', borderRadius: '4px' }}
+          >
             {SPEED_OPTIONS.map((opt) => {
               const isSelected = speedMultiplier === opt.value;
               return (
@@ -184,6 +195,8 @@ export const TimeControls: React.FC = () => {
                       useAchievementStore.getState().unlock('time_warp');
                     }
                   }}
+                  aria-label={`Set simulation speed multiplier to ${opt.label}`}
+                  aria-pressed={isSelected}
                   style={{
                     background: isSelected ? 'var(--color-teal-cyan)' : 'transparent',
                     border: 'none',
@@ -225,6 +238,8 @@ export const TimeControls: React.FC = () => {
           {/* Toggle Event Drawer */}
           <button
             onClick={() => setShowEventDrawer(!showEventDrawer)}
+            aria-label={showEventDrawer ? 'Hide Special Visual Events Drawer' : 'Show Special Visual Events Drawer'}
+            aria-expanded={showEventDrawer}
             style={{
               background: showEventDrawer ? 'var(--color-cosmic-gold)' : 'rgba(245, 166, 35, 0.15)',
               border: '1px solid var(--color-cosmic-gold)',
