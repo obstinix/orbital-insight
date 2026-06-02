@@ -86,6 +86,8 @@ export const ExoplanetPanel: React.FC = () => {
 
   return (
     <div
+      role="region"
+      aria-label="Exoplanet Catalog HUD"
       style={{
         position: 'absolute',
         top: 'var(--space-2)',
@@ -103,6 +105,8 @@ export const ExoplanetPanel: React.FC = () => {
       {/* Exoplanet Details Card */}
       {activeExoplanet && (
         <div
+          role="status"
+          aria-live="polite"
           style={{
             background: 'rgba(10, 14, 42, 0.85)',
             backdropFilter: 'blur(16px)',
@@ -197,6 +201,7 @@ export const ExoplanetPanel: React.FC = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search exoplanets..."
+          aria-label="Search exoplanets catalog"
           style={{
             background: 'rgba(5, 8, 16, 0.6)',
             border: '1px solid rgba(0, 240, 255, 0.2)',
@@ -210,11 +215,16 @@ export const ExoplanetPanel: React.FC = () => {
         />
 
         {/* Category Filters row */}
-        <div style={{ display: 'flex', gap: '3px', background: 'rgba(5, 8, 16, 0.5)', padding: '2px', borderRadius: '4px', overflowX: 'auto' }}>
+        <div 
+          aria-label="Filter category choices"
+          style={{ display: 'flex', gap: '3px', background: 'rgba(5, 8, 16, 0.5)', padding: '2px', borderRadius: '4px', overflowX: 'auto' }}
+        >
           {['ALL', 'HABITABLE', 'OCEAN', 'LAVA', 'ICE'].map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
+              aria-pressed={activeCategory === cat}
+              aria-label={`Filter catalog by ${cat.toLowerCase()} planets`}
               style={{
                 background: activeCategory === cat ? 'var(--color-teal-cyan)' : 'transparent',
                 border: 'none',
@@ -234,13 +244,18 @@ export const ExoplanetPanel: React.FC = () => {
         </div>
 
         {/* Planet List buttons */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', overflowY: 'auto', maxHeight: '180px' }}>
+        <div 
+          aria-label="Exoplanet matches"
+          style={{ display: 'flex', flexDirection: 'column', gap: '4px', overflowY: 'auto', maxHeight: '180px' }}
+        >
           {filteredExoplanets.map((p) => {
             const isSelected = p.id === selectedExoplanetId;
             return (
               <button
                 key={p.id}
                 onClick={() => handleExoplanetClick(p.id, p.category)}
+                aria-pressed={isSelected}
+                aria-label={`Select exoplanet ${p.name}, type is ${p.type}, category is ${p.category}`}
                 style={{
                   width: '100%',
                   textAlign: 'left',
