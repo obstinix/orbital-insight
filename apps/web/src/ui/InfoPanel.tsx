@@ -104,6 +104,7 @@ export const InfoPanel: React.FC = () => {
   }, [config, selectedPlanetId]);
 
   if (!config) return null;
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   return (
     <AnimatePresence>
@@ -116,7 +117,7 @@ export const InfoPanel: React.FC = () => {
         initial={{ opacity: 0, x: 300 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: 300 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 120 }}
+        transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', damping: 25, stiffness: 120 }}
         style={{
           position: 'absolute',
           top: 'var(--space-2)',
@@ -207,6 +208,7 @@ export const InfoPanel: React.FC = () => {
             href={config.facts.url}
             target="_blank"
             rel="noopener noreferrer"
+            aria-label={`Source: ${config.facts.source} (opens in a new tab)`}
             style={{ color: 'var(--color-stellar-blue)', textDecoration: 'none', display: 'block', marginTop: '0.3rem' }}
           >
             Source: {config.facts.source} ↗
@@ -219,6 +221,7 @@ export const InfoPanel: React.FC = () => {
             // Emulate click event to trigger chat launch
             window.dispatchEvent(new CustomEvent('launchAIGuide', { detail: { target: config.id } }));
           }}
+          aria-label={`Ask ship guide about ${config.name}`}
           style={{
             marginTop: '0.8rem',
             background: 'linear-gradient(135deg, var(--color-nebula-purple), var(--color-stellar-blue))',
