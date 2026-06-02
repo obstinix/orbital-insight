@@ -1,0 +1,30 @@
+{
+  "id": "saturn",
+  "name": "Saturn",
+  "radius_km": 58232,
+  "mass_kg": 5.683e26,
+  "orbital_period_days": 10759.22,
+  "rotation_period_hours": 10.7,
+  "axial_tilt_deg": 26.73,
+  "semi_major_axis_au": 9.582,
+  "eccentricity": 0.0565,
+  "inclination_deg": 2.49,
+  "textures": {
+    "diffuse": "saturn_diffuse.basis"
+  },
+  "ring": {
+    "inner_radius_scale": 1.2,
+    "outer_radius_scale": 2.3,
+    "texture": "saturn_ring.basis"
+  },
+  "atmosphere": {
+    "radius_scale": 1.015,
+    "rayleigh": [0.9, 0.8, 0.5],
+    "density": 0.75
+  },
+  "moons": ["mimas", "enceladus", "tethys", "dione", "rhea", "titan", "iapetus"],
+  "facts": {
+    "source": "NASA Solar System Exploration",
+    "url": "https://solarsystem.nasa.gov/planets/saturn/overview/"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "mars",
+  "name": "Mars",
+  "radius_km": 3389.5,
+  "mass_kg": 6.39e23,
+  "orbital_period_days": 686.98,
+  "rotation_period_hours": 24.62,
+  "axial_tilt_deg": 25.19,
+  "semi_major_axis_au": 1.524,
+  "eccentricity": 0.0934,
+  "inclination_deg": 1.85,
+  "textures": {
+    "diffuse": "mars_diffuse.basis",
+    "normal": "mars_normal.basis"
+  },
+  "atmosphere": {
+    "radius_scale": 1.015,
+    "rayleigh": [0.65, 0.45, 0.35],
+    "density": 0.35
+  },
+  "moons": ["phobos", "deimos"],
+  "facts": {
+    "source": "NASA Solar System Exploration",
+    "url": "https://solarsystem.nasa.gov/planets/mars/overview/"
+  }
+}

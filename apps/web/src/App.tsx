@@ -6,6 +6,7 @@ import { createCameraController } from './engine/core/Camera';
 import { createSceneGraph, SceneLayer } from './engine/core/SceneGraph';
 import { startRenderLoop } from './engine/core/RenderLoop';
 import { StarField } from './engine/bodies/StarField';
+import { SolarSystem } from './engine/bodies/SolarSystem';
 import { useEngineStore } from './store/useEngineStore';
 import { usePerformanceStore } from './store/usePerformanceStore';
 import './styles/tokens.css';
@@ -27,25 +28,17 @@ const ThreeCanvas: React.FC = () => {
     
     const aspect = canvas.clientWidth / canvas.clientHeight;
     const camera = new THREE.PerspectiveCamera(60, aspect, 0.1, 20000);
-    camera.position.set(0, 30, 80);
+    camera.position.set(0, 100, 350); // Set camera slightly higher and further back to see orbits
 
     const cameraController = createCameraController(camera, canvas);
     cameraController.setOrbitTarget(new THREE.Vector3(0, 0, 0));
 
-    // 2. Add stars background and rotating placeholder sun mesh
+    // 2. Add stars background and Solar System bodies
     const starField = new StarField();
     sceneGraph.addObject(starField.points, SceneLayer.UNIVERSE);
 
-    const geometry = new THREE.SphereGeometry(12, 32, 32);
-    const material = new THREE.MeshBasicMaterial({
-      color: 0xF5A623,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.8
-    });
-    const sunMesh = new THREE.Mesh(geometry, material);
-    sunMesh.name = 'test_sun_mesh';
-    sceneGraph.addObject(sunMesh, SceneLayer.PLANETS);
+    const solarSystem = new SolarSystem();
+    sceneGraph.addObject(solarSystem.group, SceneLayer.PLANETS);
 
     // 3. Register systems globally
     useEngineStore.getState().initEngine(
@@ -61,8 +54,8 @@ const ThreeCanvas: React.FC = () => {
     const loop = startRenderLoop(renderer, sceneGraph.scene, camera, (delta) => {
       elapsedSeconds += delta;
 
-      // Rotation logic
-      sunMesh.rotation.y += 0.2 * delta;
+      // Update solar system positions and animations
+      solarSystem.update(elapsedSeconds);
       
       // Update starfield twinkle cycles
       starField.update(elapsedSeconds);
@@ -88,6 +81,7 @@ const ThreeCanvas: React.FC = () => {
       loop.stop();
       cameraController.dispose();
       starField.dispose();
+      solarSystem.dispose();
       renderer.dispose();
     };
   }, [isInitialized]);

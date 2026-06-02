@@ -1,0 +1,21 @@
+{
+  "id": "moon",
+  "name": "Moon",
+  "radius_km": 1737.4,
+  "mass_kg": 7.342e22,
+  "orbital_period_days": 27.32,
+  "rotation_period_hours": 655.7,
+  "axial_tilt_deg": 6.68,
+  "semi_major_axis_au": 0.00257,
+  "eccentricity": 0.0549,
+  "inclination_deg": 5.14,
+  "textures": {
+    "diffuse": "moon_diffuse.basis",
+    "normal": "moon_normal.basis"
+  },
+  "moons": [],
+  "facts": {
+    "source": "NASA Solar System Exploration",
+    "url": "https://solarsystem.nasa.gov/moons/earths-moon/overview/"
+  }
+}

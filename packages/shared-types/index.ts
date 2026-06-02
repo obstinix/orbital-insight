@@ -24,7 +24,7 @@ export interface SceneContext {
 
 export interface AtmosphereConfig {
   radius_scale: number;
-  rayleigh: [number, number, number];
+  rayleigh: number[];
   density: number;
 }
 
@@ -46,10 +46,11 @@ export interface PlanetConfig {
   inclination_deg: number;
   textures: {
     diffuse: string;
-    normal: string;
-    specular: string;
+    normal?: string;
+    specular?: string;
     night?: string;
     clouds?: string;
+    emissive?: string;
   };
   atmosphere?: AtmosphereConfig;
   ring?: {

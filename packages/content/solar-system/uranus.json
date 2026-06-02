@@ -1,0 +1,30 @@
+{
+  "id": "uranus",
+  "name": "Uranus",
+  "radius_km": 25362,
+  "mass_kg": 8.681e25,
+  "orbital_period_days": 30688.5,
+  "rotation_period_hours": -17.2,
+  "axial_tilt_deg": 97.77,
+  "semi_major_axis_au": 19.201,
+  "eccentricity": 0.0471,
+  "inclination_deg": 0.77,
+  "textures": {
+    "diffuse": "uranus_diffuse.basis"
+  },
+  "ring": {
+    "inner_radius_scale": 1.3,
+    "outer_radius_scale": 1.8,
+    "texture": "uranus_ring.basis"
+  },
+  "atmosphere": {
+    "radius_scale": 1.015,
+    "rayleigh": [0.45, 0.8, 0.9],
+    "density": 0.85
+  },
+  "moons": ["miranda", "ariel", "umbriel", "titania", "oberon"],
+  "facts": {
+    "source": "NASA Solar System Exploration",
+    "url": "https://solarsystem.nasa.gov/planets/uranus/overview/"
+  }
+}

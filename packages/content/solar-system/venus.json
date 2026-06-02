@@ -1,0 +1,26 @@
+{
+  "id": "venus",
+  "name": "Venus",
+  "radius_km": 6051.8,
+  "mass_kg": 4.867e24,
+  "orbital_period_days": 224.7,
+  "rotation_period_hours": -5832.5,
+  "axial_tilt_deg": 177.3,
+  "semi_major_axis_au": 0.723,
+  "eccentricity": 0.0067,
+  "inclination_deg": 3.39,
+  "textures": {
+    "diffuse": "venus_diffuse.basis",
+    "normal": "venus_normal.basis"
+  },
+  "atmosphere": {
+    "radius_scale": 1.03,
+    "rayleigh": [0.95, 0.75, 0.35],
+    "density": 0.95
+  },
+  "moons": [],
+  "facts": {
+    "source": "NASA Solar System Exploration",
+    "url": "https://solarsystem.nasa.gov/planets/venus/overview/"
+  }
+}
