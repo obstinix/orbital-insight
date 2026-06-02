@@ -15,6 +15,9 @@ import { SpacecraftController } from './spacecraft/SpacecraftController';
 import { GuideChatPanel } from './ui/GuideChatPanel';
 import { JourneyMode } from './modes/JourneyMode';
 import { ChapterSelector } from './ui/ChapterSelector';
+import { ConstellationPanel } from './ui/ConstellationPanel';
+import { ConstellationLines } from './engine/bodies/ConstellationLines';
+import { useConstellationStore } from './store/useConstellationStore';
 import { usePlanetStore } from './store/usePlanetStore';
 import { useEngineStore } from './store/useEngineStore';
 import { usePerformanceStore } from './store/usePerformanceStore';
@@ -42,9 +45,16 @@ const ThreeCanvas: React.FC = () => {
     const cameraController = createCameraController(camera, canvas);
     cameraController.setOrbitTarget(new THREE.Vector3(0, 0, 0));
 
-    // 2. Add stars background and Solar System bodies
+    // 2. Add sky sphere group (for geolocation alignment), stars, and constellation lines
+    const skySphereGroup = new THREE.Group();
+    skySphereGroup.name = 'sky_sphere_group';
+    sceneGraph.addObject(skySphereGroup, SceneLayer.UNIVERSE);
+
     const starField = new StarField();
-    sceneGraph.addObject(starField.points, SceneLayer.UNIVERSE);
+    skySphereGroup.add(starField.points);
+
+    const constellationLines = new ConstellationLines();
+    skySphereGroup.add(constellationLines.group);
 
     const solarSystem = new SolarSystem();
     sceneGraph.addObject(solarSystem.group, SceneLayer.PLANETS);
@@ -63,7 +73,8 @@ const ThreeCanvas: React.FC = () => {
       cameraController,
       sceneGraph,
       spacecraft,
-      journeyMode
+      journeyMode,
+      constellationLines
     );
 
     const timeController = new TimeController();
@@ -81,6 +92,23 @@ const ThreeCanvas: React.FC = () => {
       
       // Update starfield twinkle cycles
       starField.update(elapsedSeconds);
+
+      // Update constellation lines and pulsating nodes
+      constellationLines.update(elapsedSeconds);
+
+      // Toggle constellation lines based on state
+      const { latitude, longitude, showConstellations } = useConstellationStore.getState();
+      constellationLines.group.visible = showConstellations;
+
+      // Rotate sky sphere based on user coordinates and calculated Sidereal Time
+      const now = new Date();
+      const utcHours = now.getUTCHours() + now.getUTCMinutes() / 60 + now.getUTCSeconds() / 3600;
+      const gst = (utcHours * 1.0027379 + 6.6) % 24;
+      const lst = (gst + longitude / 15.0 + 24.0) % 24;
+      const lstRad = lst * 15 * (Math.PI / 180);
+
+      skySphereGroup.rotation.x = (90 - latitude) * (Math.PI / 180);
+      skySphereGroup.rotation.y = lstRad;
 
       // Update spacecraft FSM and animations
       spacecraft.update(elapsedSeconds);
@@ -112,6 +140,7 @@ const ThreeCanvas: React.FC = () => {
       solarSystem.dispose();
       raycaster.dispose();
       spacecraft.dispose();
+      constellationLines.dispose();
       renderer.dispose();
     };
   }, [isInitialized]);
@@ -252,14 +281,7 @@ const UniverseView: React.FC = () => (
   </div>
 );
 
-const ConstellationView: React.FC = () => (
-  <div style={panelStyle}>
-    <h2>Constellations</h2>
-    <p style={{ color: 'var(--color-muted)', marginTop: '0.5rem' }}>
-      Toggle sky map to explore official IAU celestial figures rotated relative to your geolocation.
-    </p>
-  </div>
-);
+
 
 const ExoplanetView: React.FC = () => (
   <div style={panelStyle}>
@@ -345,7 +367,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<UniverseView />} />
           <Route path="/journey" element={<ChapterSelector />} />
-          <Route path="/constellations" element={<ConstellationView />} />
+          <Route path="/constellations" element={<ConstellationPanel />} />
           <Route path="/exoplanets" element={<ExoplanetView />} />
           <Route path="/missions" element={<MissionsView />} />
           <Route path="/achievements" element={<AchievementsView />} />

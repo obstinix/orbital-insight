@@ -1,0 +1,108 @@
+[
+  {
+    "id": "ursa_major",
+    "name": "Ursa Major",
+    "abbreviation": "UMa",
+    "mythology": "Representing Callisto from Greek mythology, who was transformed into a bear by Hera. In North America, its seven brightest stars form the iconic Big Dipper asterism, used as a celestial guidepost.",
+    "stars": {
+      "dubhe": { "name": "Dubhe", "ra": 11.06, "dec": 61.75 },
+      "merak": { "name": "Merak", "ra": 11.03, "dec": 56.38 },
+      "phecda": { "name": "Phecda", "ra": 11.89, "dec": 53.68 },
+      "megrez": { "name": "Megrez", "ra": 12.25, "dec": 57.03 },
+      "alioth": { "name": "Alioth", "ra": 12.90, "dec": 55.96 },
+      "mizar": { "name": "Mizar", "ra": 13.40, "dec": 54.92 },
+      "alkaid": { "name": "Alkaid", "ra": 13.79, "dec": 49.31 }
+    },
+    "connections": [
+      ["merak", "dubhe"],
+      ["phecda", "merak"],
+      ["megrez", "phecda"],
+      ["megrez", "dubhe"],
+      ["alioth", "megrez"],
+      ["mizar", "alioth"],
+      ["alkaid", "mizar"]
+    ]
+  },
+  {
+    "id": "orion",
+    "name": "Orion",
+    "abbreviation": "Ori",
+    "mythology": "Representing the giant hunter Orion of Greek myth. It is one of the most prominent constellations, located on the celestial equator and visible globally. It contains the red supergiant Betelgeuse and blue supergiant Rigel.",
+    "stars": {
+      "betelgeuse": { "name": "Betelgeuse", "ra": 5.92, "dec": 7.41 },
+      "rigel": { "name": "Rigel", "ra": 5.25, "dec": -8.20 },
+      "bellatrix": { "name": "Bellatrix", "ra": 5.42, "dec": 6.35 },
+      "alnilam": { "name": "Alnilam", "ra": 5.60, "dec": -1.20 },
+      "alnitak": { "name": "Alnitak", "ra": 5.68, "dec": -1.94 },
+      "mintaka": { "name": "Mintaka", "ra": 5.53, "dec": -0.30 },
+      "saiph": { "name": "Saiph", "ra": 5.79, "dec": -9.67 }
+    },
+    "connections": [
+      ["betelgeuse", "bellatrix"],
+      ["bellatrix", "mintaka"],
+      ["mintaka", "alnilam"],
+      ["alnilam", "alnitak"],
+      ["alnitak", "saiph"],
+      ["saiph", "rigel"],
+      ["rigel", "mintaka"],
+      ["betelgeuse", "alnitak"]
+    ]
+  },
+  {
+    "id": "cassiopeia",
+    "name": "Cassiopeia",
+    "abbreviation": "Cas",
+    "mythology": "Cassiopeia, the vain queen of Greek mythology, boasts of her beauty and is chained to her throne in the heavens. Known for its distinct 'W' shape formed by its five brightest stars.",
+    "stars": {
+      "caph": { "name": "Caph", "ra": 0.15, "dec": 59.15 },
+      "schedar": { "name": "Schedar", "ra": 0.68, "dec": 56.54 },
+      "gamma_cas": { "name": "Gamma Cas", "ra": 0.95, "dec": 60.72 },
+      "ruchbah": { "name": "Ruchbah", "ra": 1.43, "dec": 60.23 },
+      "segin": { "name": "Segin", "ra": 1.90, "dec": 63.67 }
+    },
+    "connections": [
+      ["caph", "schedar"],
+      ["schedar", "gamma_cas"],
+      ["gamma_cas", "ruchbah"],
+      ["ruchbah", "segin"]
+    ]
+  },
+  {
+    "id": "leo",
+    "name": "Leo",
+    "abbreviation": "Leo",
+    "mythology": "Representing the mythical Nemean Lion slain by Heracles. Leo is one of the earliest recognized constellations, centered around its brightest star, Regulus.",
+    "stars": {
+      "regulus": { "name": "Regulus", "ra": 10.14, "dec": 11.96 },
+      "denebola": { "name": "Denebola", "ra": 11.82, "dec": 14.57 },
+      "algieba": { "name": "Algieba", "ra": 10.33, "dec": 19.84 },
+      "zosma": { "name": "Zosma", "ra": 11.23, "dec": 20.52 },
+      "chertan": { "name": "Chertan", "ra": 11.23, "dec": 15.43 },
+      "rasalas": { "name": "Rasalas", "ra": 9.88, "dec": 26.00 }
+    },
+    "connections": [
+      ["regulus", "algieba"],
+      ["algieba", "rasalas"],
+      ["algieba", "zosma"],
+      ["zosma", "chertan"],
+      ["chertan", "regulus"],
+      ["zosma", "denebola"]
+    ]
+  },
+  {
+    "id": "crux",
+    "name": "Crux",
+    "abbreviation": "Cru",
+    "mythology": "The Southern Cross. Crux is the smallest of all 88 constellations but has played an essential role in navigation across the Southern Hemisphere, serving as a beacon for maritime explorers.",
+    "stars": {
+      "acrux": { "name": "Acrux", "ra": 12.44, "dec": -63.10 },
+      "gacrux": { "name": "Gacrux", "ra": 12.52, "dec": -57.11 },
+      "mimosa": { "name": "Mimosa", "ra": 12.79, "dec": -59.68 },
+      "imai": { "name": "Imai", "ra": 12.25, "dec": -58.75 }
+    },
+    "connections": [
+      ["acrux", "gacrux"],
+      ["mimosa", "imai"]
+    ]
+  }
+]
