@@ -7,6 +7,9 @@ import { createSceneGraph, SceneLayer } from './engine/core/SceneGraph';
 import { startRenderLoop } from './engine/core/RenderLoop';
 import { StarField } from './engine/bodies/StarField';
 import { SolarSystem } from './engine/bodies/SolarSystem';
+import { RayCaster } from './engine/interaction/RayCaster';
+import { InfoPanel } from './ui/InfoPanel';
+import { usePlanetStore } from './store/usePlanetStore';
 import { useEngineStore } from './store/useEngineStore';
 import { usePerformanceStore } from './store/usePerformanceStore';
 import './styles/tokens.css';
@@ -39,6 +42,8 @@ const ThreeCanvas: React.FC = () => {
 
     const solarSystem = new SolarSystem();
     sceneGraph.addObject(solarSystem.group, SceneLayer.PLANETS);
+
+    const raycaster = new RayCaster(camera, sceneGraph.scene, canvas, solarSystem.planets);
 
     // 3. Register systems globally
     useEngineStore.getState().initEngine(
@@ -82,6 +87,7 @@ const ThreeCanvas: React.FC = () => {
       cameraController.dispose();
       starField.dispose();
       solarSystem.dispose();
+      raycaster.dispose();
       renderer.dispose();
     };
   }, [isInitialized]);
@@ -284,6 +290,29 @@ const panelStyle: React.CSSProperties = {
 
 // ── ROOT APP ENTRY ───────────────────────────────────────────────
 export default function App() {
+  const setSelectedPlanetId = usePlanetStore((state) => state.setSelectedPlanetId);
+
+  useEffect(() => {
+    const handleSelection = (e: Event) => {
+      const customEvent = e as CustomEvent<{ planetId: string }>;
+      const planetId = customEvent.detail.planetId;
+      setSelectedPlanetId(planetId);
+
+      // Focus camera on Selected Planet in Orbit mode
+      const engine = useEngineStore.getState();
+      const planetObj = engine.scene?.getObjectByName(`planet_group_${planetId}`);
+      if (planetObj && engine.cameraController) {
+        engine.cameraController.setOrbitTarget(planetObj);
+        engine.cameraController.setMode('ORBIT');
+      }
+    };
+
+    window.addEventListener('celestialBodySelected', handleSelection);
+    return () => {
+      window.removeEventListener('celestialBodySelected', handleSelection);
+    };
+  }, [setSelectedPlanetId]);
+
   return (
     <HashRouter>
       <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
@@ -293,6 +322,7 @@ export default function App() {
         {/* Global HUD Layout components */}
         <TopHudStats />
         <LeftNavigationPanel />
+        <InfoPanel />
 
         {/* Router-controlled HUD overlays */}
         <Routes>
