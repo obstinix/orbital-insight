@@ -5,6 +5,7 @@ import { createRenderer } from './engine/core/Renderer';
 import { createCameraController } from './engine/core/Camera';
 import { createSceneGraph, SceneLayer } from './engine/core/SceneGraph';
 import { startRenderLoop } from './engine/core/RenderLoop';
+import { StarField } from './engine/bodies/StarField';
 import { useEngineStore } from './store/useEngineStore';
 import { usePerformanceStore } from './store/usePerformanceStore';
 import './styles/tokens.css';
@@ -31,7 +32,10 @@ const ThreeCanvas: React.FC = () => {
     const cameraController = createCameraController(camera, canvas);
     cameraController.setOrbitTarget(new THREE.Vector3(0, 0, 0));
 
-    // 2. Add placeholder celestial body (rotating wireframe Sun representation)
+    // 2. Add stars background and rotating placeholder sun mesh
+    const starField = new StarField();
+    sceneGraph.addObject(starField.points, SceneLayer.UNIVERSE);
+
     const geometry = new THREE.SphereGeometry(12, 32, 32);
     const material = new THREE.MeshBasicMaterial({
       color: 0xF5A623,
@@ -53,10 +57,16 @@ const ThreeCanvas: React.FC = () => {
     );
 
     // 4. Run loop
+    let elapsedSeconds = 0;
     const loop = startRenderLoop(renderer, sceneGraph.scene, camera, (delta) => {
+      elapsedSeconds += delta;
+
       // Rotation logic
       sunMesh.rotation.y += 0.2 * delta;
       
+      // Update starfield twinkle cycles
+      starField.update(elapsedSeconds);
+
       // Update camera systems (dampening)
       cameraController.update();
     });
@@ -77,6 +87,7 @@ const ThreeCanvas: React.FC = () => {
       window.removeEventListener('resize', handleResize);
       loop.stop();
       cameraController.dispose();
+      starField.dispose();
       renderer.dispose();
     };
   }, [isInitialized]);
