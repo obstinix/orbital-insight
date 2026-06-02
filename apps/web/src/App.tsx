@@ -12,6 +12,7 @@ import { InfoPanel } from './ui/InfoPanel';
 import { TimeController } from './engine/simulation/TimeController';
 import { TimeControls } from './ui/TimeControls';
 import { SpacecraftController } from './spacecraft/SpacecraftController';
+import { GuideChatPanel } from './ui/GuideChatPanel';
 import { usePlanetStore } from './store/usePlanetStore';
 import { useEngineStore } from './store/useEngineStore';
 import { usePerformanceStore } from './store/usePerformanceStore';
@@ -339,6 +340,7 @@ export default function App() {
         <LeftNavigationPanel />
         <InfoPanel />
         <TimeControls />
+        <GuideChatPanel />
 
         {/* Router-controlled HUD overlays */}
         <Routes>
