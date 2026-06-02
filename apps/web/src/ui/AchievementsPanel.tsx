@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAchievementStore } from '../store/useAchievementStore';
 import { useAccountStore } from '../store/useAccountStore';
 
@@ -15,6 +15,20 @@ export const AchievementsPanel: React.FC = () => {
   // Share Card Modal state
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareSuccess, setShareSuccess] = useState(false);
+
+  // Focus and close share modal via keyboard
+  useEffect(() => {
+    if (!showShareModal) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowShareModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showShareModal]);
 
   const unlockedCount = achievements.filter((a) => a.unlockedAt !== null).length;
   const totalCount = achievements.length;
@@ -54,6 +68,8 @@ export const AchievementsPanel: React.FC = () => {
 
   return (
     <div
+      role="region"
+      aria-label="Explorer Mission Log HUD"
       style={{
         position: 'absolute',
         top: 'var(--space-2)',
@@ -103,6 +119,7 @@ export const AchievementsPanel: React.FC = () => {
                 value={tempUsername}
                 onChange={(e) => setTempUsername(e.target.value)}
                 maxLength={18}
+                aria-label="Edit explorer username"
                 style={{
                   flex: 1,
                   background: 'rgba(5, 8, 16, 0.8)',
@@ -116,11 +133,16 @@ export const AchievementsPanel: React.FC = () => {
               />
             </div>
             {/* Avatar Select list */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', margin: '4px 0' }}>
+            <div 
+              aria-label="Select avatar badge"
+              style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', margin: '4px 0' }}
+            >
               {AVATAR_OPTIONS.map((av) => (
                 <button
                   key={av}
                   onClick={() => setTempAvatar(av)}
+                  aria-label={`Select avatar ${av}`}
+                  aria-pressed={tempAvatar === av}
                   style={{
                     background: tempAvatar === av ? 'rgba(245, 166, 35, 0.2)' : 'rgba(5, 8, 16, 0.4)',
                     border: tempAvatar === av ? '1px solid var(--color-cosmic-gold)' : '1px solid rgba(74, 144, 226, 0.15)',
@@ -172,6 +194,7 @@ export const AchievementsPanel: React.FC = () => {
                     setTempAvatar(profile.avatar);
                     setIsEditingProfile(true);
                   }}
+                  aria-label="Edit explorer profile name and avatar"
                   style={{
                     background: 'transparent',
                     border: 'none',
@@ -240,7 +263,7 @@ export const AchievementsPanel: React.FC = () => {
           </div>
         </div>
 
-        <button onClick={handleShareLog} style={shareBtnStyle}>
+        <button onClick={handleShareLog} aria-label="Export and share mission log" style={shareBtnStyle}>
           🚀 EXPORT MISSION LOG
         </button>
       </div>
@@ -330,7 +353,7 @@ export const AchievementsPanel: React.FC = () => {
           })}
         </div>
 
-        <button onClick={handleResetAll} style={resetBtnStyle}>
+        <button onClick={handleResetAll} aria-label="Wipe all telemetry records" style={resetBtnStyle}>
           ⚠️ WIPE TELEMETRY RECORDS
         </button>
       </div>
@@ -355,6 +378,9 @@ export const AchievementsPanel: React.FC = () => {
         >
           {/* Card body */}
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="share-modal-title"
             style={{
               width: '320px',
               background: 'linear-gradient(135deg, #0A0E2A 0%, #050810 100%)',
@@ -390,7 +416,7 @@ export const AchievementsPanel: React.FC = () => {
               <span style={{ fontSize: '0.65rem', color: 'var(--color-cosmic-gold)', fontFamily: 'var(--font-mono)', letterSpacing: '2px' }}>
                 OFFICIAL RECRUITMENT LOG
               </span>
-              <h2 style={{ fontSize: '1.4rem', color: '#fff', margin: '4px 0 2px 0' }}>
+              <h2 id="share-modal-title" style={{ fontSize: '1.4rem', color: '#fff', margin: '4px 0 2px 0' }}>
                 {profile.username}
               </h2>
               <div style={{ color: 'var(--color-teal-cyan)', fontFamily: 'var(--font-mono)', fontSize: '0.75rem', fontWeight: 'bold' }}>
