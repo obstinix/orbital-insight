@@ -18,6 +18,8 @@ export const ChapterSelector: React.FC = () => {
 
   return (
     <div
+      role="region"
+      aria-label="Journey Chapter Selector"
       style={{
         position: 'absolute',
         top: 'var(--space-2)',
@@ -74,6 +76,8 @@ export const ChapterSelector: React.FC = () => {
 
         {isTransitioning && (
           <div
+            role="status"
+            aria-live="assertive"
             style={{
               marginTop: '10px',
               padding: '6px 12px',
@@ -127,6 +131,8 @@ export const ChapterSelector: React.FC = () => {
                 key={ch.id}
                 onClick={() => handleChapterClick(ch.id)}
                 disabled={isTransitioning}
+                aria-pressed={isActive}
+                aria-label={`Select Chapter ${ch.id}: ${ch.title}, spatial scale is ${ch.scaleLabel}`}
                 style={{
                   width: '100%',
                   textAlign: 'left',
@@ -162,7 +168,7 @@ export const ChapterSelector: React.FC = () => {
                   <span
                     style={{
                       fontFamily: 'var(--font-mono)',
-                      fontSize: '0.6rem',
+                      fontSize: '0.65rem',
                       color: isActive ? 'var(--color-teal-cyan)' : 'var(--color-muted)',
                     }}
                   >
