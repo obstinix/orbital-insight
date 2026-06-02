@@ -117,7 +117,7 @@ export class SolarSystem {
    * Updates all planets, orbits, and corona particles animations.
    * @param elapsedSeconds Elapsed time in simulation.
    */
-  public update(elapsedSeconds: number): void {
+  public update(simulatedDate: Date, elapsedSeconds: number): void {
     // 1. Animate Corona particle positions/glow oscillates
     const posAttribute = this.coronaGeometry.getAttribute('position') as THREE.BufferAttribute;
     const array = posAttribute.array as Float32Array;
@@ -156,12 +156,12 @@ export class SolarSystem {
 
     for (const planet of this.planets) {
       if (planet.id === 'moon') continue; // Moon handled separately
-      planet.update(elapsedSeconds);
+      planet.update(simulatedDate);
     }
 
     if (earth && moon) {
       // Calculate moon heliocentric position relative to Earth
-      moon.update(elapsedSeconds, earth.group.position);
+      moon.update(simulatedDate, earth.group.position);
     }
   }
 

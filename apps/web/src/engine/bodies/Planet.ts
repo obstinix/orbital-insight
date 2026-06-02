@@ -6,6 +6,7 @@ import atmosphereFragmentShader from '../shaders/atmosphere.frag';
 // Scale factor: 1 AU = 150 Three.js units
 const AU_TO_UNITS = 150;
 const VISUAL_PLANET_SCALE = 0.0015; // Visual scaling factor so planets can be seen in orbits
+const BASE_DATE_MS = new Date('2026-01-01T00:00:00Z').getTime();
 
 export class Planet {
   public id: string;
@@ -147,18 +148,25 @@ export class Planet {
 
   /**
    * Updates rotation and dynamic Keplerian orbital positions.
-   * @param elapsedSeconds Elapsed time in simulation.
+   * @param simulatedDate Simulated datetime.
    * @param parentPos Coordinates of parent body (e.g. Earth position for Moon).
    */
-  public update(elapsedSeconds: number, parentPos: THREE.Vector3 = new THREE.Vector3(0, 0, 0)): void {
+  public update(simulatedDate: Date, parentPos: THREE.Vector3 = new THREE.Vector3(0, 0, 0)): void {
     // 1. Rotation (spin on axial tilt)
-    this.bodyMesh.rotation.y += this.rotationSpeed * elapsedSeconds * 1000; // time multiplier scaled for visibility
+    const hoursSinceBase = (simulatedDate.getTime() - BASE_DATE_MS) / 3600000;
+    const periodHours = this.config.rotation_period_hours || 24;
+    
+    // Scale rotation mapping for aesthetic clarity
+    const rotationRad = periodHours !== 0 
+      ? (hoursSinceBase / periodHours) * 2 * Math.PI * 10.0 // spin speed scalar
+      : 0;
+    this.bodyMesh.rotation.y = rotationRad;
 
     // 2. Orbital mechanics position solving
     if (this.config.id === 'sun') {
       this.group.position.set(0, 0, 0);
     } else {
-      const position = this.solveKeplerOrbit(elapsedSeconds);
+      const position = this.solveKeplerOrbit(simulatedDate);
       // Offset by parent position (for moons)
       this.group.position.copy(position).add(parentPos);
     }
@@ -167,7 +175,7 @@ export class Planet {
   /**
    * Evaluates Keplerian orbit equations to find heliocentric positions.
    */
-  private solveKeplerOrbit(elapsedSeconds: number): THREE.Vector3 {
+  private solveKeplerOrbit(simulatedDate: Date): THREE.Vector3 {
     const a = this.config.semi_major_axis_au * AU_TO_UNITS;
     const e = this.config.eccentricity;
     const i = THREE.MathUtils.degToRad(this.config.inclination_deg);
@@ -175,10 +183,11 @@ export class Planet {
 
     if (T === 0) return new THREE.Vector3(0, 0, 0);
 
-    // Calculate mean anomaly M
-    // Convert time to virtual days: elapsedSeconds * 2.0 (speed up orbit time representation)
-    const virtualDays = (elapsedSeconds * 5.0) % T;
-    const M = (virtualDays / T) * 2 * Math.PI;
+    // Calculate number of simulated days since base epoch
+    const diffDays = (simulatedDate.getTime() - BASE_DATE_MS) / (1000 * 86400);
+    
+    // Keplerian Mean Anomaly
+    const M = (diffDays / T) * 2 * Math.PI;
 
     // Solve Kepler's equation E - e sin(E) = M using Newtonian approximation
     let E = M;
@@ -190,7 +199,7 @@ export class Planet {
     const xOrb = a * (Math.cos(E) - e);
     const yOrb = a * Math.sqrt(1 - e * e) * Math.sin(E);
 
-    // Rotate by inclination angle i (setting longitude of node Omega = 0 for simpler coordinates alignment)
+    // Rotate by inclination angle i (Omega = 0)
     const x = xOrb;
     const y = yOrb * Math.sin(i);
     const z = yOrb * Math.cos(i);

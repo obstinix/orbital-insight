@@ -9,6 +9,8 @@ import { StarField } from './engine/bodies/StarField';
 import { SolarSystem } from './engine/bodies/SolarSystem';
 import { RayCaster } from './engine/interaction/RayCaster';
 import { InfoPanel } from './ui/InfoPanel';
+import { TimeController } from './engine/simulation/TimeController';
+import { TimeControls } from './ui/TimeControls';
 import { usePlanetStore } from './store/usePlanetStore';
 import { useEngineStore } from './store/useEngineStore';
 import { usePerformanceStore } from './store/usePerformanceStore';
@@ -54,13 +56,18 @@ const ThreeCanvas: React.FC = () => {
       sceneGraph
     );
 
+    const timeController = new TimeController();
+
     // 4. Run loop
     let elapsedSeconds = 0;
     const loop = startRenderLoop(renderer, sceneGraph.scene, camera, (delta) => {
       elapsedSeconds += delta;
 
+      // Update virtual date with time controller
+      const simulatedDate = timeController.update(delta);
+
       // Update solar system positions and animations
-      solarSystem.update(elapsedSeconds);
+      solarSystem.update(simulatedDate, elapsedSeconds);
       
       // Update starfield twinkle cycles
       starField.update(elapsedSeconds);
@@ -323,6 +330,7 @@ export default function App() {
         <TopHudStats />
         <LeftNavigationPanel />
         <InfoPanel />
+        <TimeControls />
 
         {/* Router-controlled HUD overlays */}
         <Routes>
