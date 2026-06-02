@@ -8,6 +8,7 @@ interface ConstellationState {
   setUserLocation: (lat: number, lon: number) => void;
   setShowConstellations: (show: boolean) => void;
   setSelectedId: (id: string | null) => void;
+  toggleConstellations: () => void;
 }
 
 export const useConstellationStore = create<ConstellationState>((set) => ({
@@ -18,4 +19,5 @@ export const useConstellationStore = create<ConstellationState>((set) => ({
   setUserLocation: (lat, lon) => set({ latitude: lat, longitude: lon }),
   setShowConstellations: (show) => set({ showConstellations: show }),
   setSelectedId: (id) => set({ selectedId: id }),
+  toggleConstellations: () => set((s) => ({ showConstellations: !s.showConstellations })),
 }));

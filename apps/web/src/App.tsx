@@ -38,6 +38,8 @@ const AchievementsPanel = React.lazy(() =>
 );
 import { AchievementToast } from './ui/AchievementToast';
 import { AudioControls } from './ui/AudioControls';
+import { KeyboardShortcuts } from './ui/KeyboardShortcuts';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useAchievementStore } from './store/useAchievementStore';
 import { useJourneyStore } from './store/useJourneyStore';
 import { usePlanetStore } from './store/usePlanetStore';
@@ -439,9 +441,13 @@ const PanelLoader: React.FC = () => {
 };
 
 // ── ROOT APP ENTRY ───────────────────────────────────────────────
-export default function App() {
+
+// Inner component that lives inside the Router context so hooks like
+// useNavigate (used by useKeyboardShortcuts) work correctly.
+function AppContent() {
   const setSelectedPlanetId = usePlanetStore((state) => state.setSelectedPlanetId);
   const currentChapterId = useJourneyStore((state) => state.currentChapterId);
+  const { isShortcutsPanelOpen, setShortcutsPanelOpen } = useKeyboardShortcuts();
 
   // Monitor chapter milestones for achievements
   useEffect(() => {
@@ -476,32 +482,44 @@ export default function App() {
   }, [setSelectedPlanetId]);
 
   return (
+    <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
+      {/* Core 3D engine canvas - persists across routes */}
+      <ThreeCanvas />
+
+      {/* Global HUD Layout components */}
+      <TopHudStats />
+      <LeftNavigationPanel />
+      <InfoPanel />
+      <TimeControls />
+      <GuideChatPanel />
+      <AchievementToast />
+      <AudioControls />
+
+      {/* Keyboard shortcuts overlay */}
+      <KeyboardShortcuts
+        isOpen={isShortcutsPanelOpen}
+        onClose={() => setShortcutsPanelOpen(false)}
+      />
+
+      {/* Router-controlled HUD overlays wrapped in dynamic loader */}
+      <React.Suspense fallback={<PanelLoader />}>
+        <Routes>
+          <Route path="/" element={<UniverseView />} />
+          <Route path="/journey" element={<ChapterSelector />} />
+          <Route path="/constellations" element={<ConstellationPanel />} />
+          <Route path="/exoplanets" element={<ExoplanetPanel />} />
+          <Route path="/missions" element={<MissionsPanel />} />
+          <Route path="/achievements" element={<AchievementsPanel />} />
+        </Routes>
+      </React.Suspense>
+    </div>
+  );
+}
+
+export default function App() {
+  return (
     <HashRouter>
-      <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
-        {/* Core 3D engine canvas - persists across routes */}
-        <ThreeCanvas />
-
-        {/* Global HUD Layout components */}
-        <TopHudStats />
-        <LeftNavigationPanel />
-        <InfoPanel />
-        <TimeControls />
-        <GuideChatPanel />
-        <AchievementToast />
-        <AudioControls />
-
-        {/* Router-controlled HUD overlays wrapped in dynamic loader */}
-        <React.Suspense fallback={<PanelLoader />}>
-          <Routes>
-            <Route path="/" element={<UniverseView />} />
-            <Route path="/journey" element={<ChapterSelector />} />
-            <Route path="/constellations" element={<ConstellationPanel />} />
-            <Route path="/exoplanets" element={<ExoplanetPanel />} />
-            <Route path="/missions" element={<MissionsPanel />} />
-            <Route path="/achievements" element={<AchievementsPanel />} />
-          </Routes>
-        </React.Suspense>
-      </div>
+      <AppContent />
     </HashRouter>
   );
 }
