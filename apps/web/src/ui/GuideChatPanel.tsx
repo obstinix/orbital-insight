@@ -311,16 +311,6 @@ export const GuideChatPanel: React.FC = () => {
       </form>
     </div>
   );
-
-      {/* CSS Spin effect */}
-      <style>{`
-        @keyframes spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
-    </div>
-  );
 };
 
 const shortcutBtnStyle: React.CSSProperties = {
