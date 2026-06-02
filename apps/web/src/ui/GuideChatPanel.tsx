@@ -90,6 +90,8 @@ export const GuideChatPanel: React.FC = () => {
 
   return (
     <div
+      role="log"
+      aria-label="AI Guide Chat Panel"
       style={{
         position: 'absolute',
         bottom: 'var(--space-2)',
@@ -123,6 +125,7 @@ export const GuideChatPanel: React.FC = () => {
         <div style={{ position: 'relative', width: '32px', height: '32px' }}>
           <svg
             viewBox="0 0 100 100"
+            aria-hidden="true"
             style={{
               width: '100%',
               height: '100%',
@@ -152,9 +155,9 @@ export const GuideChatPanel: React.FC = () => {
 
         {/* Title */}
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <span style={{ fontSize: '0.9rem', color: '#fff', fontWeight: 'bold', letterSpacing: '1px' }}>
+          <h2 style={{ fontSize: '0.9rem', color: '#fff', fontWeight: 'bold', letterSpacing: '1px', margin: 0 }}>
             NOVA V1.2
-          </span>
+          </h2>
           <span style={{ fontSize: '0.65rem', color: 'var(--color-teal-cyan)', fontFamily: 'var(--font-mono)' }}>
             {isStreaming ? 'STREAMING LINK...' : 'STANDBY // ORBIT_READY'}
           </span>
@@ -221,6 +224,7 @@ export const GuideChatPanel: React.FC = () => {
 
       {/* Quick Shortcuts Bar */}
       <div
+        aria-label="Scan inquiry shortcuts"
         style={{
           display: 'flex',
           gap: '6px',
@@ -232,6 +236,7 @@ export const GuideChatPanel: React.FC = () => {
         <button
           onClick={() => handleShortcutClick('atmosphere')}
           disabled={isStreaming}
+          aria-label={`Scan atmosphere parameters for ${selectedPlanetId}`}
           style={shortcutBtnStyle}
         >
           ATMOSPHERE
@@ -239,6 +244,7 @@ export const GuideChatPanel: React.FC = () => {
         <button
           onClick={() => handleShortcutClick('gravity')}
           disabled={isStreaming}
+          aria-label={`Calculate surface gravity for ${selectedPlanetId}`}
           style={shortcutBtnStyle}
         >
           GRAVITY
@@ -246,6 +252,7 @@ export const GuideChatPanel: React.FC = () => {
         <button
           onClick={() => handleShortcutClick('life')}
           disabled={isStreaming}
+          aria-label={`Assess habitability markers for ${selectedPlanetId}`}
           style={shortcutBtnStyle}
         >
           HABITABILITY
@@ -271,6 +278,7 @@ export const GuideChatPanel: React.FC = () => {
           onChange={(e) => setInputVal(e.target.value)}
           placeholder={isStreaming ? 'RELAY IN PROGRESS...' : `Query NOVA about ${selectedPlanetId.toUpperCase()}...`}
           disabled={isStreaming}
+          aria-label={`Query NOVA guide about ${selectedPlanetId}`}
           style={{
             flex: 1,
             background: 'rgba(5, 8, 16, 0.7)',
@@ -286,6 +294,7 @@ export const GuideChatPanel: React.FC = () => {
         <button
           type="submit"
           disabled={isStreaming || !inputVal.trim()}
+          aria-label="Send query"
           style={{
             background: 'transparent',
             border: 'none',
@@ -300,6 +309,8 @@ export const GuideChatPanel: React.FC = () => {
           SEND
         </button>
       </form>
+    </div>
+  );
 
       {/* CSS Spin effect */}
       <style>{`
