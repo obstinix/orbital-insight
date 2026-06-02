@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { CameraController } from '../engine/core/Camera';
 import { SceneGraph } from '../engine/core/SceneGraph';
 import { SpacecraftController } from '../spacecraft/SpacecraftController';
+import { JourneyMode } from '../modes/JourneyMode';
 
 interface EngineState {
   isInitialized: boolean;
@@ -12,13 +13,15 @@ interface EngineState {
   cameraController: CameraController | null;
   sceneGraph: SceneGraph | null;
   spacecraftController: SpacecraftController | null;
+  journeyMode: JourneyMode | null;
   initEngine: (
     renderer: THREE.WebGLRenderer,
     scene: THREE.Scene,
     camera: THREE.PerspectiveCamera,
     cameraController: CameraController,
     sceneGraph: SceneGraph,
-    spacecraftController: SpacecraftController
+    spacecraftController: SpacecraftController,
+    journeyMode: JourneyMode
   ) => void;
 }
 
@@ -30,7 +33,8 @@ export const useEngineStore = create<EngineState>((set) => ({
   cameraController: null,
   sceneGraph: null,
   spacecraftController: null,
-  initEngine: (renderer, scene, camera, cameraController, sceneGraph, spacecraftController) =>
+  journeyMode: null,
+  initEngine: (renderer, scene, camera, cameraController, sceneGraph, spacecraftController, journeyMode) =>
     set({
       isInitialized: true,
       renderer,
@@ -39,5 +43,6 @@ export const useEngineStore = create<EngineState>((set) => ({
       cameraController,
       sceneGraph,
       spacecraftController,
+      journeyMode,
     }),
 }));

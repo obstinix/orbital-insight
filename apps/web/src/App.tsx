@@ -13,6 +13,8 @@ import { TimeController } from './engine/simulation/TimeController';
 import { TimeControls } from './ui/TimeControls';
 import { SpacecraftController } from './spacecraft/SpacecraftController';
 import { GuideChatPanel } from './ui/GuideChatPanel';
+import { JourneyMode } from './modes/JourneyMode';
+import { ChapterSelector } from './ui/ChapterSelector';
 import { usePlanetStore } from './store/usePlanetStore';
 import { useEngineStore } from './store/useEngineStore';
 import { usePerformanceStore } from './store/usePerformanceStore';
@@ -51,6 +53,8 @@ const ThreeCanvas: React.FC = () => {
 
     const spacecraft = new SpacecraftController(sceneGraph.scene, camera);
 
+    const journeyMode = new JourneyMode(sceneGraph.scene, camera, spacecraft);
+
     // 3. Register systems globally
     useEngineStore.getState().initEngine(
       renderer,
@@ -58,7 +62,8 @@ const ThreeCanvas: React.FC = () => {
       camera,
       cameraController,
       sceneGraph,
-      spacecraft
+      spacecraft,
+      journeyMode
     );
 
     const timeController = new TimeController();
@@ -79,6 +84,9 @@ const ThreeCanvas: React.FC = () => {
 
       // Update spacecraft FSM and animations
       spacecraft.update(elapsedSeconds);
+
+      // Update journey mode deep space animations
+      journeyMode.update(elapsedSeconds);
 
       // Update camera systems (dampening)
       cameraController.update();
@@ -244,15 +252,6 @@ const UniverseView: React.FC = () => (
   </div>
 );
 
-const JourneyView: React.FC = () => (
-  <div style={panelStyle}>
-    <h2>Journey Mode</h2>
-    <p style={{ color: 'var(--color-muted)', marginTop: '0.5rem' }}>
-      Prepare for warp. Select a journey path scaling from Earth to the edge of the cosmic horizon.
-    </p>
-  </div>
-);
-
 const ConstellationView: React.FC = () => (
   <div style={panelStyle}>
     <h2>Constellations</h2>
@@ -345,7 +344,7 @@ export default function App() {
         {/* Router-controlled HUD overlays */}
         <Routes>
           <Route path="/" element={<UniverseView />} />
-          <Route path="/journey" element={<JourneyView />} />
+          <Route path="/journey" element={<ChapterSelector />} />
           <Route path="/constellations" element={<ConstellationView />} />
           <Route path="/exoplanets" element={<ExoplanetView />} />
           <Route path="/missions" element={<MissionsView />} />
