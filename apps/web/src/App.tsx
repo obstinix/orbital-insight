@@ -21,6 +21,7 @@ import { ExoplanetRenderer } from './engine/bodies/ExoplanetRenderer';
 import { useExoplanetStore } from './store/useExoplanetStore';
 import { SpacecraftTracker } from './engine/bodies/SpacecraftTracker';
 import { SpecialEvents } from './engine/bodies/SpecialEvents';
+import { AudioEngine } from './engine/audio/AudioEngine';
 
 // Lazy-loaded route panels for performance optimizations
 const ConstellationPanel = React.lazy(() => 
@@ -36,6 +37,7 @@ const AchievementsPanel = React.lazy(() =>
   import('./ui/AchievementsPanel').then(m => ({ default: m.AchievementsPanel }))
 );
 import { AchievementToast } from './ui/AchievementToast';
+import { AudioControls } from './ui/AudioControls';
 import { useAchievementStore } from './store/useAchievementStore';
 import { useJourneyStore } from './store/useJourneyStore';
 import { usePlanetStore } from './store/usePlanetStore';
@@ -94,6 +96,8 @@ const ThreeCanvas: React.FC = () => {
     exoplanetRenderer.mesh.visible = false;
 
     const specialEvents = new SpecialEvents(sceneGraph.scene, solarSystem.planets);
+
+    const audioEngine = new AudioEngine();
 
     const raycaster = new RayCaster(camera, sceneGraph.scene, canvas, solarSystem.planets);
 
@@ -173,6 +177,20 @@ const ThreeCanvas: React.FC = () => {
       // Update journey mode deep space animations
       journeyMode.update(elapsedSeconds);
 
+      // Update spatial audio engine — find nearest planet for proximity hum
+      let nearestPos: THREE.Vector3 | null = null;
+      let nearestMass = 0;
+      let minDist = Infinity;
+      for (const planet of solarSystem.planets) {
+        const d = camera.position.distanceTo(planet.group.position);
+        if (d < minDist) {
+          minDist = d;
+          nearestPos = planet.group.position;
+          nearestMass = planet.config.mass_kg;
+        }
+      }
+      audioEngine.update(camera, nearestPos, nearestMass, spacecraft.state);
+
       // Update camera systems (dampening)
       cameraController.update();
     });
@@ -188,10 +206,17 @@ const ThreeCanvas: React.FC = () => {
     };
     window.addEventListener('resize', handleResize);
 
+    // Listen for audio unlock event (from LandingHero CTA click)
+    const handleAudioUnlock = () => {
+      audioEngine.init();
+    };
+    window.addEventListener('orbitalInsightAudioUnlock', handleAudioUnlock);
+
     // Cleanup on unmount
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('exoplanetVisualUpdate', handleExoplanetVisualUpdate);
+      window.removeEventListener('orbitalInsightAudioUnlock', handleAudioUnlock);
       loop.stop();
       cameraController.dispose();
       starField.dispose();
@@ -204,6 +229,7 @@ const ThreeCanvas: React.FC = () => {
       specialEvents.dispose();
       constellationLines.dispose();
       exoplanetRenderer.dispose();
+      audioEngine.dispose();
       renderer.dispose();
     };
   }, [isInitialized]);
@@ -462,6 +488,7 @@ export default function App() {
         <TimeControls />
         <GuideChatPanel />
         <AchievementToast />
+        <AudioControls />
 
         {/* Router-controlled HUD overlays wrapped in dynamic loader */}
         <React.Suspense fallback={<PanelLoader />}>
