@@ -1,0 +1,29 @@
+{
+  "id": "earth",
+  "name": "Earth",
+  "radius_km": 6371,
+  "mass_kg": 5.972e24,
+  "orbital_period_days": 365.25,
+  "rotation_period_hours": 23.934,
+  "axial_tilt_deg": 23.44,
+  "semi_major_axis_au": 1.0,
+  "eccentricity": 0.0167,
+  "inclination_deg": 0.0,
+  "textures": {
+    "diffuse": "earth_diffuse_8k.basis",
+    "normal": "earth_normal_4k.basis",
+    "specular": "earth_specular_4k.basis",
+    "night": "earth_lights_4k.basis",
+    "clouds": "earth_clouds_2k.basis"
+  },
+  "atmosphere": {
+    "radius_scale": 1.025,
+    "rayleigh": [0.175, 0.409, 1.0],
+    "density": 0.7
+  },
+  "moons": ["moon"],
+  "facts": {
+    "source": "NASA Solar System Exploration",
+    "url": "https://solarsystem.nasa.gov/planets/earth/overview/"
+  }
+}
