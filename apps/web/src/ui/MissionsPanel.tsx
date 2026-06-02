@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useMissionStore } from '../store/useMissionStore';
+import { useAchievementStore } from '../store/useAchievementStore';
 import { useEngineStore } from '../store/useEngineStore';
 import * as THREE from 'three';
 import gsap from 'gsap';
@@ -104,8 +105,10 @@ export const MissionsPanel: React.FC = () => {
 
     if (targetName === 'ISS') {
       targetObj = engine.scene.getObjectByName('iss_model') || null;
+      useAchievementStore.getState().unlock('mission_iss');
     } else if (targetName === 'JWST') {
       targetObj = engine.scene.getObjectByName('jwst_model') || null;
+      useAchievementStore.getState().unlock('mission_jwst');
     } else if (targetName === 'moon') {
       targetObj = engine.scene.getObjectByName('planet_group_moon') || null;
     } else if (targetName === 'saturn') {

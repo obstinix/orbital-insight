@@ -23,6 +23,11 @@ import { ExoplanetRenderer } from './engine/bodies/ExoplanetRenderer';
 import { useExoplanetStore } from './store/useExoplanetStore';
 import { SpacecraftTracker } from './engine/bodies/SpacecraftTracker';
 import { MissionsPanel } from './ui/MissionsPanel';
+import { SpecialEvents } from './engine/bodies/SpecialEvents';
+import { AchievementsPanel } from './ui/AchievementsPanel';
+import { AchievementToast } from './ui/AchievementToast';
+import { useAchievementStore } from './store/useAchievementStore';
+import { useJourneyStore } from './store/useJourneyStore';
 import { usePlanetStore } from './store/usePlanetStore';
 import { useEngineStore } from './store/useEngineStore';
 import { usePerformanceStore } from './store/usePerformanceStore';
@@ -78,6 +83,8 @@ const ThreeCanvas: React.FC = () => {
     sceneGraph.addObject(exoplanetRenderer.mesh, SceneLayer.PLANETS);
     exoplanetRenderer.mesh.visible = false;
 
+    const specialEvents = new SpecialEvents(sceneGraph.scene, solarSystem.planets);
+
     const raycaster = new RayCaster(camera, sceneGraph.scene, canvas, solarSystem.planets);
 
     const spacecraft = new SpacecraftController(sceneGraph.scene, camera);
@@ -127,6 +134,8 @@ const ThreeCanvas: React.FC = () => {
       if (spacecraftTracker) {
         spacecraftTracker.update(elapsedSeconds);
       }
+
+      specialEvents.update(elapsedSeconds, delta);
       
       // Update starfield twinkle cycles
       starField.update(elapsedSeconds);
@@ -182,6 +191,7 @@ const ThreeCanvas: React.FC = () => {
       if (spacecraftTracker) {
         spacecraftTracker.dispose();
       }
+      specialEvents.dispose();
       constellationLines.dispose();
       exoplanetRenderer.dispose();
       renderer.dispose();
@@ -314,30 +324,6 @@ const LeftNavigationPanel: React.FC = () => {
   );
 };
 
-// Route View wrappers
-const UniverseView: React.FC = () => (
-  <div style={panelStyle}>
-    <h2>Solar System Orbit</h2>
-    <p style={{ color: 'var(--color-muted)', marginTop: '0.5rem' }}>
-      Click and drag the central wireframe sphere to orbit. Scroll to zoom in/out.
-    </p>
-  </div>
-);
-
-
-
-
-
-
-const AchievementsView: React.FC = () => (
-  <div style={panelStyle}>
-    <h2>Mission Log</h2>
-    <p style={{ color: 'var(--color-muted)', marginTop: '0.5rem' }}>
-      Achievements: 0 / 50 discovered. Complete navigation milestones to unlock starmap nodes.
-    </p>
-  </div>
-);
-
 const panelStyle: React.CSSProperties = {
   position: 'absolute',
   top: 'var(--space-2)',
@@ -353,9 +339,36 @@ const panelStyle: React.CSSProperties = {
   animation: 'slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both',
 };
 
+// Route View wrappers
+const UniverseView: React.FC = () => (
+  <div style={panelStyle}>
+    <h2>Solar System Orbit</h2>
+    <p style={{ color: 'var(--color-muted)', marginTop: '0.5rem' }}>
+      Click and drag the central wireframe sphere to orbit. Scroll to zoom in/out.
+    </p>
+  </div>
+);
+
+
+
+
+
+
 // ── ROOT APP ENTRY ───────────────────────────────────────────────
 export default function App() {
   const setSelectedPlanetId = usePlanetStore((state) => state.setSelectedPlanetId);
+  const currentChapterId = useJourneyStore((state) => state.currentChapterId);
+
+  // Monitor chapter milestones for achievements
+  useEffect(() => {
+    if (currentChapterId === 1) {
+      useAchievementStore.getState().unlock('journey_start');
+    } else if (currentChapterId === 5) {
+      useAchievementStore.getState().unlock('journey_voyager');
+    } else if (currentChapterId === 8) {
+      useAchievementStore.getState().unlock('journey_complete');
+    }
+  }, [currentChapterId]);
 
   useEffect(() => {
     const handleSelection = (e: Event) => {
@@ -390,6 +403,7 @@ export default function App() {
         <InfoPanel />
         <TimeControls />
         <GuideChatPanel />
+        <AchievementToast />
 
         {/* Router-controlled HUD overlays */}
         <Routes>
@@ -398,7 +412,7 @@ export default function App() {
           <Route path="/constellations" element={<ConstellationPanel />} />
           <Route path="/exoplanets" element={<ExoplanetPanel />} />
           <Route path="/missions" element={<MissionsPanel />} />
-          <Route path="/achievements" element={<AchievementsView />} />
+          <Route path="/achievements" element={<AchievementsPanel />} />
         </Routes>
       </div>
     </HashRouter>

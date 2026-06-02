@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useConstellationStore } from '../store/useConstellationStore';
+import { useAchievementStore } from '../store/useAchievementStore';
 import { useEngineStore } from '../store/useEngineStore';
 import constellationsData from '../../../../packages/content/constellations.json';
 import { ConstellationLines } from '../engine/bodies/ConstellationLines';
@@ -202,7 +203,12 @@ export const ConstellationPanel: React.FC = () => {
           <input
             type="checkbox"
             checked={showConstellations}
-            onChange={(e) => setShowConstellations(e.target.checked)}
+            onChange={(e) => {
+              setShowConstellations(e.target.checked);
+              if (e.target.checked) {
+                useAchievementStore.getState().unlock('constellations_toggle');
+              }
+            }}
             style={{
               accentColor: 'var(--color-teal-cyan)',
               cursor: 'pointer',

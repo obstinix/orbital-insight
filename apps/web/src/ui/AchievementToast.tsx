@@ -49,19 +49,19 @@ export const AchievementToast: React.FC = () => {
   };
 
   useEffect(() => {
-    if (activeToast) {
-      setVisible(true);
-      playSpaceChime();
+    if (!activeToast) return;
 
-      // Automatically hide and clear after 4 seconds
-      const timer = setTimeout(() => {
-        setVisible(false);
-        // Delay clearing store state slightly to allow exit transition
-        setTimeout(clearToast, 350);
-      }, 4000);
+    setVisible(true);
+    playSpaceChime();
 
-      return () => clearTimeout(timer);
-    }
+    // Automatically hide and clear after 4 seconds
+    const timer = setTimeout(() => {
+      setVisible(false);
+      // Delay clearing store state slightly to allow exit transition
+      setTimeout(clearToast, 350);
+    }, 4000);
+
+    return () => clearTimeout(timer);
   }, [activeToast, clearToast]);
 
   if (!activeToast) return null;

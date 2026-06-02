@@ -4,6 +4,8 @@ import { useEngineStore } from '../store/useEngineStore';
 import exoplanetsData from '../../../../packages/content/exoplanets.json';
 import * as THREE from 'three';
 import gsap from 'gsap';
+import { useAchievementStore } from '../store/useAchievementStore';
+
 
 export const ExoplanetPanel: React.FC = () => {
   const {
@@ -25,6 +27,12 @@ export const ExoplanetPanel: React.FC = () => {
 
   const handleExoplanetClick = (id: string, category: string) => {
     setSelectedExoplanetId(id);
+
+    if (category === 'habitable') {
+      useAchievementStore.getState().unlock('exoplanet_habitable');
+    } else if (category === 'lava') {
+      useAchievementStore.getState().unlock('exoplanet_lava');
+    }
 
     const engine = useEngineStore.getState();
     const mesh = engine.scene?.getObjectByName('exoplanet_mesh');

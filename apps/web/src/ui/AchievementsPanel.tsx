@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAchievementStore, Achievement } from '../store/useAchievementStore';
+import { useAchievementStore } from '../store/useAchievementStore';
 import { useAccountStore } from '../store/useAccountStore';
 
 const AVATAR_OPTIONS = ['🚀', '👨‍🚀', '👽', '🪐', '🛰️', '🛸', '☄️', '🌌', '🔭'];

@@ -219,7 +219,7 @@ export class SpecialEvents {
   /**
    * Main loops updater called in standard frame ticking.
    */
-  public update(elapsedSeconds: number, delta: number): void {
+  public update(_elapsedSeconds: number, delta: number): void {
     const eventStore = useEventStore.getState();
 
     // ─── A. METEOR SHOWER RUNNER ──────────────────────────────────
