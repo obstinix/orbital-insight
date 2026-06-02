@@ -87,11 +87,13 @@ export const ConstellationPanel: React.FC = () => {
         const direction = starPos.clone().normalize();
         const targetCamPos = direction.clone().multiplyScalar(-300); // 300 units from origin
 
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
         gsap.to(engine.camera.position, {
           x: targetCamPos.x,
           y: targetCamPos.y,
           z: targetCamPos.z,
-          duration: 2.2,
+          duration: prefersReducedMotion ? 0 : 2.2,
           ease: 'power3.inOut',
           onUpdate: () => {
             if (engine.camera) {
@@ -116,7 +118,7 @@ export const ConstellationPanel: React.FC = () => {
         flexDirection: 'column',
         gap: 'var(--space-2)',
         overflow: 'hidden',
-        animation: 'slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both',
+        animation: 'slideIn var(--duration-medium) var(--ease-warp) both',
       }}
     >
       {/* Geolocation Card */}

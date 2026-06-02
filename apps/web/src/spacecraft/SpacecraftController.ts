@@ -247,6 +247,8 @@ export class SpacecraftController {
     const direction = new THREE.Vector3().subVectors(targetWorldPos, startPos).normalize();
 
     // GSAP Timeline setup
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     const tl = gsap.timeline({
       onComplete: () => {
         this.attachToPlanet(targetPlanetId);
@@ -264,6 +266,10 @@ export class SpacecraftController {
         if (onComplete) onComplete();
       }
     });
+
+    if (prefersReducedMotion) {
+      tl.timeScale(1000);
+    }
 
     // Stage 1: Engage thruster charges (THRUSTING) - 1.2s
     tl.to(this.engineGlow.scale, {

@@ -52,11 +52,13 @@ export const ExoplanetPanel: React.FC = () => {
         engine.cameraController.setMode('FREE_ROAM');
         engine.cameraController.setOrbitTarget(new THREE.Vector3(0, 0, 0));
 
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
         gsap.to(engine.camera.position, {
           x: 0,
           y: 0,
           z: 220, // close up distance
-          duration: 1.5,
+          duration: prefersReducedMotion ? 0 : 1.5,
           ease: 'power2.inOut',
           onUpdate: () => {
             if (engine.camera) {
@@ -95,7 +97,7 @@ export const ExoplanetPanel: React.FC = () => {
         flexDirection: 'column',
         gap: 'var(--space-2)',
         overflow: 'hidden',
-        animation: 'slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both',
+        animation: 'slideIn var(--duration-medium) var(--ease-warp) both',
       }}
     >
       {/* Exoplanet Details Card */}

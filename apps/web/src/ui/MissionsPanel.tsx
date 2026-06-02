@@ -118,12 +118,13 @@ export const MissionsPanel: React.FC = () => {
     } else if (targetName === 'voyager_1') {
       // voyager target (just zoom camera out far in a specific direction)
       const targetPos = new THREE.Vector3(500, 200, -800);
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       engine.cameraController.setMode('FREE_ROAM');
       gsap.to(engine.camera.position, {
         x: targetPos.x,
         y: targetPos.y,
         z: targetPos.z,
-        duration: 2.5,
+        duration: prefersReducedMotion ? 0 : 2.5,
         ease: 'power2.inOut',
         onUpdate: () => {
           if (engine.camera && engine.cameraController) {
@@ -146,11 +147,12 @@ export const MissionsPanel: React.FC = () => {
       const dist = targetName === 'moon' || targetName === 'saturn' ? 30 : 6;
       const targetCamPos = worldPos.clone().add(new THREE.Vector3(dist, dist / 2, dist));
 
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       gsap.to(engine.camera.position, {
         x: targetCamPos.x,
         y: targetCamPos.y,
         z: targetCamPos.z,
-        duration: 2.0,
+        duration: prefersReducedMotion ? 0 : 2.0,
         ease: 'power2.inOut',
       });
     }
@@ -173,7 +175,7 @@ export const MissionsPanel: React.FC = () => {
         flexDirection: 'column',
         gap: 'var(--space-2)',
         overflow: 'hidden',
-        animation: 'slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both',
+        animation: 'slideIn var(--duration-medium) var(--ease-warp) both',
       }}
     >
       {/* Tracker Menu Cards */}
