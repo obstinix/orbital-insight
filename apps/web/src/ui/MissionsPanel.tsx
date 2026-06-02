@@ -164,6 +164,8 @@ export const MissionsPanel: React.FC = () => {
 
   return (
     <div
+      role="region"
+      aria-label="Space Mission Tracker HUD"
       style={{
         position: 'absolute',
         top: 'var(--space-2)',
@@ -208,6 +210,8 @@ export const MissionsPanel: React.FC = () => {
 
         {/* Tab Buttons */}
         <div
+          role="tablist"
+          aria-label="Mission Tracker Tabs"
           style={{
             display: 'flex',
             background: 'rgba(5, 8, 16, 0.6)',
@@ -220,6 +224,10 @@ export const MissionsPanel: React.FC = () => {
           {(['TELEMETRY', 'LAUNCHES', 'TIMELINE'] as const).map((tab) => (
             <button
               key={tab}
+              id={`tab-${tab}`}
+              role="tab"
+              aria-selected={activeTab === tab}
+              aria-controls={`tabpanel-${tab}`}
               onClick={() => setActiveTab(tab)}
               style={{
                 flex: 1,
@@ -243,6 +251,10 @@ export const MissionsPanel: React.FC = () => {
       {/* Tab Contents: TELEMETRY */}
       {activeTab === 'TELEMETRY' && (
         <div
+          role="tabpanel"
+          id="tabpanel-TELEMETRY"
+          aria-labelledby="tab-TELEMETRY"
+          tabIndex={0}
           style={{
             background: 'rgba(10, 14, 42, 0.75)',
             backdropFilter: 'blur(16px)',
@@ -258,6 +270,7 @@ export const MissionsPanel: React.FC = () => {
           <div style={{ display: 'flex', gap: '8px' }}>
             <button
               onClick={() => setActiveSpacecraft('ISS')}
+              aria-pressed={activeSpacecraft === 'ISS'}
               style={{
                 flex: 1,
                 background: activeSpacecraft === 'ISS' ? 'rgba(0, 240, 255, 0.1)' : 'rgba(5, 8, 16, 0.4)',
@@ -274,6 +287,7 @@ export const MissionsPanel: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveSpacecraft('JWST')}
+              aria-pressed={activeSpacecraft === 'JWST'}
               style={{
                 flex: 1,
                 background: activeSpacecraft === 'JWST' ? 'rgba(255, 170, 0, 0.1)' : 'rgba(5, 8, 16, 0.4)',
@@ -374,6 +388,10 @@ export const MissionsPanel: React.FC = () => {
       {/* Tab Contents: LAUNCHES */}
       {activeTab === 'LAUNCHES' && (
         <div
+          role="tabpanel"
+          id="tabpanel-LAUNCHES"
+          aria-labelledby="tab-LAUNCHES"
+          tabIndex={0}
           style={{
             background: 'rgba(10, 14, 42, 0.75)',
             backdropFilter: 'blur(16px)',
@@ -437,6 +455,10 @@ export const MissionsPanel: React.FC = () => {
       {/* Tab Contents: TIMELINE */}
       {activeTab === 'TIMELINE' && (
         <div
+          role="tabpanel"
+          id="tabpanel-TIMELINE"
+          aria-labelledby="tab-TIMELINE"
+          tabIndex={0}
           style={{
             background: 'rgba(10, 14, 42, 0.75)',
             backdropFilter: 'blur(16px)',
@@ -456,6 +478,10 @@ export const MissionsPanel: React.FC = () => {
               return (
                 <div
                   key={m.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={isSelected}
+                  aria-label={`Historical Mission: ${m.name} (${m.year})`}
                   style={{
                     background: isSelected ? 'rgba(0, 240, 255, 0.08)' : 'rgba(5, 8, 16, 0.3)',
                     border: isSelected
@@ -467,6 +493,12 @@ export const MissionsPanel: React.FC = () => {
                     transition: 'all 0.2s ease',
                   }}
                   onClick={() => handleHistoricalMissionClick(m.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleHistoricalMissionClick(m.id);
+                    }
+                  }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '0.8rem', color: '#fff', fontWeight: 'bold' }}>
