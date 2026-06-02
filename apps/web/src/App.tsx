@@ -18,6 +18,9 @@ import { ChapterSelector } from './ui/ChapterSelector';
 import { ConstellationPanel } from './ui/ConstellationPanel';
 import { ConstellationLines } from './engine/bodies/ConstellationLines';
 import { useConstellationStore } from './store/useConstellationStore';
+import { ExoplanetPanel } from './ui/ExoplanetPanel';
+import { ExoplanetRenderer } from './engine/bodies/ExoplanetRenderer';
+import { useExoplanetStore } from './store/useExoplanetStore';
 import { usePlanetStore } from './store/usePlanetStore';
 import { useEngineStore } from './store/useEngineStore';
 import { usePerformanceStore } from './store/usePerformanceStore';
@@ -59,11 +62,21 @@ const ThreeCanvas: React.FC = () => {
     const solarSystem = new SolarSystem();
     sceneGraph.addObject(solarSystem.group, SceneLayer.PLANETS);
 
+    const exoplanetRenderer = new ExoplanetRenderer();
+    sceneGraph.addObject(exoplanetRenderer.mesh, SceneLayer.PLANETS);
+    exoplanetRenderer.mesh.visible = false;
+
     const raycaster = new RayCaster(camera, sceneGraph.scene, canvas, solarSystem.planets);
 
     const spacecraft = new SpacecraftController(sceneGraph.scene, camera);
 
     const journeyMode = new JourneyMode(sceneGraph.scene, camera, spacecraft);
+
+    const handleExoplanetVisualUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent<{ category: string }>;
+      exoplanetRenderer.setCategory(customEvent.detail.category);
+    };
+    window.addEventListener('exoplanetVisualUpdate', handleExoplanetVisualUpdate);
 
     // 3. Register systems globally
     useEngineStore.getState().initEngine(
@@ -87,8 +100,17 @@ const ThreeCanvas: React.FC = () => {
       // Update virtual date with time controller
       const simulatedDate = timeController.update(delta);
 
-      // Update solar system positions and animations
-      solarSystem.update(simulatedDate, elapsedSeconds);
+      // Toggle visibility between Solar System and Exoplanet visualizers
+      const { showExoplanetCanvas } = useExoplanetStore.getState();
+      exoplanetRenderer.mesh.visible = showExoplanetCanvas;
+      solarSystem.group.visible = !showExoplanetCanvas;
+
+      if (showExoplanetCanvas) {
+        exoplanetRenderer.update(elapsedSeconds);
+      } else {
+        // Update solar system positions and animations
+        solarSystem.update(simulatedDate, elapsedSeconds);
+      }
       
       // Update starfield twinkle cycles
       starField.update(elapsedSeconds);
@@ -134,6 +156,7 @@ const ThreeCanvas: React.FC = () => {
     // Cleanup on unmount
     return () => {
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('exoplanetVisualUpdate', handleExoplanetVisualUpdate);
       loop.stop();
       cameraController.dispose();
       starField.dispose();
@@ -141,6 +164,7 @@ const ThreeCanvas: React.FC = () => {
       raycaster.dispose();
       spacecraft.dispose();
       constellationLines.dispose();
+      exoplanetRenderer.dispose();
       renderer.dispose();
     };
   }, [isInitialized]);
@@ -283,14 +307,7 @@ const UniverseView: React.FC = () => (
 
 
 
-const ExoplanetView: React.FC = () => (
-  <div style={panelStyle}>
-    <h2>Exoplanet catalog</h2>
-    <p style={{ color: 'var(--color-muted)', marginTop: '0.5rem' }}>
-      Explore 5,000+ confirmed exoplanets parsed from the NASA Exoplanet archive database.
-    </p>
-  </div>
-);
+
 
 const MissionsView: React.FC = () => (
   <div style={panelStyle}>
@@ -368,7 +385,7 @@ export default function App() {
           <Route path="/" element={<UniverseView />} />
           <Route path="/journey" element={<ChapterSelector />} />
           <Route path="/constellations" element={<ConstellationPanel />} />
-          <Route path="/exoplanets" element={<ExoplanetView />} />
+          <Route path="/exoplanets" element={<ExoplanetPanel />} />
           <Route path="/missions" element={<MissionsView />} />
           <Route path="/achievements" element={<AchievementsView />} />
         </Routes>
