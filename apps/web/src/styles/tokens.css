@@ -114,3 +114,30 @@ h1, h2, h3, h4, h5, h6 {
     transform: translateX(0);
   }
 }
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-text {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Keyboard accessibility focus outlines */
+:where(a:any-link, button, input, select, textarea, [tabindex="0"]):focus-visible {
+  outline: 2px solid var(--color-teal-cyan);
+  outline-offset: 3px;
+  box-shadow: 0 0 10px rgba(0, 188, 212, 0.6);
+  transition: outline-color var(--duration-fast) var(--ease-warp), box-shadow var(--duration-fast) var(--ease-warp);
+}
+
