@@ -31,6 +31,7 @@ export interface AtmosphereConfig {
 export interface PlanetFacts {
   source: string;
   url: string;
+  fun_facts?: string[];
 }
 
 export interface PlanetConfig {
