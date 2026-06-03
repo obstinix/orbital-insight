@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { ClerkProvider } from '@clerk/clerk-react';
+import { ClerkProvider, useAuth } from '@clerk/clerk-react';
 import { AccountButton } from './ui/AccountButton';
 import { InfoPanel } from './ui/InfoPanel';
 import { TimeControls } from './ui/TimeControls';
@@ -301,6 +301,27 @@ const PanelLoader: React.FC = () => {
 // Inner component that lives inside the Router context so hooks like
 // useNavigate (used by useKeyboardShortcuts) work correctly.
 function AppContent() {
+  const { isLoaded, isSignedIn, getToken } = useAuth();
+  const setAuthToken = useAccountStore((state) => state.setAuthToken);
+  const fetchProfile = useAccountStore((state) => state.fetchProfile);
+
+  useEffect(() => {
+    const syncToken = async () => {
+      if (isLoaded && isSignedIn) {
+        try {
+          const token = await getToken();
+          setAuthToken(token);
+          await fetchProfile(token);
+        } catch (e) {
+          console.error('[Auth] Failed to sync token:', e);
+        }
+      } else {
+        setAuthToken(null);
+      }
+    };
+    syncToken();
+  }, [isLoaded, isSignedIn, getToken, setAuthToken, fetchProfile]);
+
   const setSelectedPlanetId = usePlanetStore((state) => state.setSelectedPlanetId);
   const currentChapterId = useJourneyStore((state) => state.currentChapterId);
   const { isShortcutsPanelOpen, setShortcutsPanelOpen } = useKeyboardShortcuts();
