@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import * as THREE from 'three';
 import { createRenderer, createComposer } from './engine/core/Renderer';
+import { initAssetManager } from './engine/loaders/AssetManager';
 import { createCameraController } from './engine/core/Camera';
 import { createSceneGraph, SceneLayer } from './engine/core/SceneGraph';
 import { startRenderLoop } from './engine/core/RenderLoop';
@@ -79,6 +80,7 @@ const ThreeCanvas: React.FC = () => {
 
     // 1. Initialize core systems
     const renderer = createRenderer(canvas);
+    initAssetManager(renderer);
     const sceneGraph = createSceneGraph();
     
     const aspect = canvas.clientWidth / canvas.clientHeight;
