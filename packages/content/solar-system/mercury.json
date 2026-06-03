@@ -2,13 +2,13 @@
   "id": "mercury",
   "name": "Mercury",
   "radius_km": 2439.7,
-  "mass_kg": 3.285e23,
+  "mass_kg": 3.285e+23,
   "orbital_period_days": 87.97,
   "rotation_period_hours": 1407.6,
   "axial_tilt_deg": 0.034,
   "semi_major_axis_au": 0.387,
   "eccentricity": 0.2056,
-  "inclination_deg": 7.0,
+  "inclination_deg": 7,
   "textures": {
     "diffuse": "mercury_diffuse.basis",
     "normal": "mercury_normal.basis"
@@ -16,6 +16,11 @@
   "moons": [],
   "facts": {
     "source": "NASA Solar System Exploration",
-    "url": "https://solarsystem.nasa.gov/planets/mercury/overview/"
+    "url": "https://solarsystem.nasa.gov/planets/mercury/overview/",
+    "fun_facts": [
+      "Mercury is the smallest planet in our solar system and is only slightly larger than Earth's Moon.",
+      "Mercury is the fastest planet, zipping around the Sun at 47 km/s.",
+      "Mercury is the second hottest planet, despite being the closest to the Sun (Venus is hotter)."
+    ]
   }
 }
