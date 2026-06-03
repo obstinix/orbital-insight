@@ -32,7 +32,7 @@ class MemoryCache {
 }
 
 const memoryCache = new MemoryCache();
-let redisClient: any = null;
+let redisClient: ReturnType<typeof createClient> | null = null;
 let isMock = true;
 
 const env = getEnv();
@@ -41,7 +41,7 @@ if (env.REDIS_URL) {
   try {
     redisClient = createClient({ url: env.REDIS_URL });
     
-    redisClient.on('error', (err: any) => {
+    redisClient.on('error', (err: Error) => {
       console.error('[Redis] Client Connection Error:', err);
     });
 
