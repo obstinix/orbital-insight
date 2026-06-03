@@ -3,6 +3,15 @@ import { Type } from '@sinclair/typebox';
 import { authenticate } from '../middleware/auth.js';
 import { query } from '../db/client.js';
 
+interface SaveProfileBody {
+  username: string;
+  avatar: string;
+  xp: number;
+  level: number;
+  rank: string;
+  achievements: string[];
+}
+
 export default async function profileRoutes(fastify: FastifyInstance): Promise<void> {
   // GET /api/profile - Returns user telemetry and unlocked achievements
   fastify.get(
@@ -78,7 +87,7 @@ export default async function profileRoutes(fastify: FastifyInstance): Promise<v
 
         // 2. Fetch achievements
         const achRes = await query('SELECT * FROM achievements WHERE user_id = $1', [userId]);
-        const achievements = achRes.rows.map((r: any) => ({
+        const achievements = achRes.rows.map((r: { achievement_id: string; unlocked_at: string | Date }) => ({
           achievement_id: r.achievement_id,
           unlocked_at: new Date(r.unlocked_at).toISOString(),
         }));
@@ -122,7 +131,7 @@ export default async function profileRoutes(fastify: FastifyInstance): Promise<v
     },
     async (request, reply) => {
       const userId = request.userId!;
-      const { username, avatar, xp, level, rank, achievements } = request.body as any;
+      const { username, avatar, xp, level, rank, achievements } = request.body as SaveProfileBody;
 
       try {
         // 1. Upsert profile
