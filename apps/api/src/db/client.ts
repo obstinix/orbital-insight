@@ -109,7 +109,7 @@ export async function initializeDatabase(): Promise<void> {
 /**
  * Executes a query against PostgreSQL or emulates it in the mock database.
  */
-export async function query(text: string, params: any[] = []): Promise<any> {
+export async function query(text: string, params: unknown[] = []): Promise<pg.QueryResult> {
   if (!isMock && pool) {
     return pool.query(text, params);
   }
@@ -119,28 +119,28 @@ export async function query(text: string, params: any[] = []): Promise<any> {
 
   // 1. Get user profile: select * from users where id = $1
   if (sql.includes('select * from users where id =')) {
-    const userId = params[0];
+    const userId = params[0] as string;
     const user = mockUsers.get(userId);
     return {
       rows: user ? [user] : [],
       rowCount: user ? 1 : 0,
-    };
+    } as pg.QueryResult;
   }
 
   // 2. Select achievements: select * from achievements where user_id = $1
   if (sql.includes('select * from achievements where user_id =')) {
-    const userId = params[0];
+    const userId = params[0] as string;
     const list = mockAchievements.filter((a) => a.user_id === userId);
     return {
       rows: list,
       rowCount: list.length,
-    };
+    } as pg.QueryResult;
   }
 
   // 3. Upsert user: insert into users (id, username, avatar, xp, level, rank) values ...
   if (sql.includes('insert into users')) {
     // Expected params: [id, username, avatar, xp, level, rank]
-    const [id, username, avatar, xp, level, rank] = params;
+    const [id, username, avatar, xp, level, rank] = params as [string, string, string, number, number, string];
     const existing = mockUsers.get(id);
     const updatedUser: MockUser = {
       id,
@@ -155,12 +155,12 @@ export async function query(text: string, params: any[] = []): Promise<any> {
     return {
       rows: [updatedUser],
       rowCount: 1,
-    };
+    } as pg.QueryResult;
   }
 
   // 4. Insert achievement: insert into achievements (user_id, achievement_id) ...
   if (sql.includes('insert into achievements')) {
-    const [userId, achievementId] = params;
+    const [userId, achievementId] = params as [string, string];
     const exists = mockAchievements.some(
       (a) => a.user_id === userId && a.achievement_id === achievementId
     );
@@ -175,7 +175,7 @@ export async function query(text: string, params: any[] = []): Promise<any> {
     return {
       rows: [],
       rowCount: exists ? 0 : 1,
-    };
+    } as pg.QueryResult;
   }
 
   throw new Error(`Unsupported Mock SQL Query: ${text}`);
