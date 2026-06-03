@@ -5,6 +5,8 @@ import { useEngineStore } from '../store/useEngineStore';
 export const ChapterSelector: React.FC = () => {
   const currentChapterId = useJourneyStore((state) => state.currentChapterId);
   const isTransitioning = useJourneyStore((state) => state.isTransitioning);
+  const isPaused = useJourneyStore((state) => state.isPaused);
+  const pausedMessage = useJourneyStore((state) => state.pausedMessage);
   const activeChapter = CHAPTERS.find((c) => c.id === currentChapterId) || CHAPTERS[0];
 
   const handleChapterClick = async (chapterId: number) => {
@@ -74,7 +76,7 @@ export const ChapterSelector: React.FC = () => {
           {activeChapter.description}
         </p>
 
-        {isTransitioning && (
+        {isTransitioning && !isPaused && (
           <div
             role="status"
             aria-live="assertive"
@@ -92,6 +94,57 @@ export const ChapterSelector: React.FC = () => {
             }}
           >
             HYPERDRIVE ENGAGED // WARPING SPATIAL SECTORS
+          </div>
+        )}
+
+        {isPaused && (
+          <div
+            style={{
+              marginTop: '12px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+            }}
+          >
+            <div
+              role="alert"
+              style={{
+                padding: '8px 12px',
+                background: 'rgba(255, 59, 48, 0.15)',
+                border: '1px solid rgba(255, 59, 48, 0.35)',
+                borderRadius: '4px',
+                fontSize: '0.75rem',
+                color: '#ff3b30',
+                fontFamily: 'var(--font-mono)',
+                lineHeight: '1.4',
+              }}
+            >
+              ⚠️ WAYPOINT PAUSED: {pausedMessage}
+            </div>
+            <button
+              onClick={() => {
+                const journeyMode = useEngineStore.getState().journeyMode;
+                if (journeyMode) {
+                  journeyMode.resumeSequence();
+                }
+              }}
+              style={{
+                width: '100%',
+                padding: '8px',
+                background: 'var(--color-teal-cyan)',
+                color: '#050816',
+                border: 'none',
+                borderRadius: '4px',
+                fontWeight: 'bold',
+                fontFamily: 'var(--font-display)',
+                cursor: 'pointer',
+                letterSpacing: '1px',
+                boxShadow: '0 0 10px var(--color-teal-cyan)',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              RESUME TRAJECTORY
+            </button>
           </div>
         )}
       </div>
