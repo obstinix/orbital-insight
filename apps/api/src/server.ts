@@ -8,6 +8,8 @@ import { Type } from '@sinclair/typebox';
 import { validateEnv, getEnv } from './config/env.js';
 import guideRoutes from './routes/guide.js';
 import missionRoutes from './routes/missions.js';
+import profileRoutes from './routes/profile.js';
+import { initializeDatabase } from './db/client.js';
 import * as Sentry from '@sentry/node';
 
 // Validate environment variables on startup
@@ -99,9 +101,13 @@ const bootstrap = async () => {
     },
   });
 
+  // Initialize Database schemas/connection
+  await initializeDatabase();
+
   // Register guide proxy routes
   await fastify.register(guideRoutes, { prefix: '/api' });
   await fastify.register(missionRoutes, { prefix: '/api' });
+  await fastify.register(profileRoutes, { prefix: '/api' });
 
   // Health endpoint with TypeBox Schema Validation
   fastify.get(
