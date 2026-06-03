@@ -1,0 +1,24 @@
+{
+  "id": "europa",
+  "name": "Europa",
+  "radius_km": 1560.8,
+  "mass_kg": 4.8e+22,
+  "orbital_period_days": 3.551,
+  "rotation_period_hours": 85.22,
+  "axial_tilt_deg": 0.1,
+  "semi_major_axis_au": 0.00448,
+  "eccentricity": 0.009,
+  "inclination_deg": 0.47,
+  "textures": {
+    "diffuse": "europa_diffuse.basis"
+  },
+  "moons": [],
+  "facts": {
+    "source": "NASA Solar System Exploration",
+    "url": "https://solarsystem.nasa.gov/moons/europa/in-depth/",
+    "fun_facts": [
+      "Europa is believed to have a global subsurface liquid water ocean beneath its icy crust, containing twice as much water as Earth's oceans.",
+      "Europa is one of the most promising candidates in the search for extraterrestrial life in the solar system."
+    ]
+  }
+}
