@@ -27,6 +27,10 @@ export default async function profileRoutes(fastify: FastifyInstance): Promise<v
               unlocked_at: Type.String(),
             })),
           }),
+          500: Type.Object({
+            error: Type.String(),
+            message: Type.String(),
+          }),
         },
       },
     },
@@ -108,6 +112,10 @@ export default async function profileRoutes(fastify: FastifyInstance): Promise<v
         response: {
           200: Type.Object({
             status: Type.String(),
+          }),
+          500: Type.Object({
+            error: Type.String(),
+            message: Type.String(),
           }),
         },
       },
