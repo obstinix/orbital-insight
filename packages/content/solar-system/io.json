@@ -1,0 +1,24 @@
+{
+  "id": "io",
+  "name": "Io",
+  "radius_km": 1821.6,
+  "mass_kg": 8.932e+22,
+  "orbital_period_days": 1.769,
+  "rotation_period_hours": 42.46,
+  "axial_tilt_deg": 0.0,
+  "semi_major_axis_au": 0.00282,
+  "eccentricity": 0.0041,
+  "inclination_deg": 0.05,
+  "textures": {
+    "diffuse": "io_diffuse.basis"
+  },
+  "moons": [],
+  "facts": {
+    "source": "NASA Solar System Exploration",
+    "url": "https://solarsystem.nasa.gov/moons/io/in-depth/",
+    "fun_facts": [
+      "Io is the most volcanically active world in the solar system, with hundreds of active volcanoes.",
+      "Io's extreme volcanism is caused by tidal heating from gravitational tug-of-war with Jupiter and neighboring moons."
+    ]
+  }
+}
