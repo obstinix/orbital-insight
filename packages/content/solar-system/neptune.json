@@ -2,8 +2,8 @@
   "id": "neptune",
   "name": "Neptune",
   "radius_km": 24622,
-  "mass_kg": 1.024e26,
-  "orbital_period_days": 60182.0,
+  "mass_kg": 1.024e+26,
+  "orbital_period_days": 60182,
   "rotation_period_hours": 16.1,
   "axial_tilt_deg": 28.32,
   "semi_major_axis_au": 30.047,
@@ -14,12 +14,23 @@
   },
   "atmosphere": {
     "radius_scale": 1.015,
-    "rayleigh": [0.25, 0.55, 0.95],
+    "rayleigh": [
+      0.25,
+      0.55,
+      0.95
+    ],
     "density": 0.9
   },
-  "moons": ["triton"],
+  "moons": [
+    "triton"
+  ],
   "facts": {
     "source": "NASA Solar System Exploration",
-    "url": "https://solarsystem.nasa.gov/planets/neptune/overview/"
+    "url": "https://solarsystem.nasa.gov/planets/neptune/overview/",
+    "fun_facts": [
+      "Neptune is the most distant planet in our solar system, orbiting about 30 times further than Earth.",
+      "Neptune has the strongest winds in the solar system, reaching speeds up to 2,100 km/h.",
+      "Neptune has a deep blue color and is home to Triton, a retrograde moon with active geysers."
+    ]
   }
 }
