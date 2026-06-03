@@ -1,0 +1,24 @@
+{
+  "id": "callisto",
+  "name": "Callisto",
+  "radius_km": 2410.3,
+  "mass_kg": 1.076e+23,
+  "orbital_period_days": 16.689,
+  "rotation_period_hours": 400.5,
+  "axial_tilt_deg": 0.0,
+  "semi_major_axis_au": 0.01259,
+  "eccentricity": 0.0074,
+  "inclination_deg": 0.28,
+  "textures": {
+    "diffuse": "callisto_diffuse.basis"
+  },
+  "moons": [],
+  "facts": {
+    "source": "NASA Solar System Exploration",
+    "url": "https://solarsystem.nasa.gov/moons/callisto/in-depth/",
+    "fun_facts": [
+      "Callisto is the most heavily cratered object in the solar system, with a surface that has remained unchanged for 4 billion years.",
+      "Callisto is Jupiter's second largest moon and the third largest in the entire solar system."
+    ]
+  }
+}
