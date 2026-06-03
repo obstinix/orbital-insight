@@ -32,6 +32,7 @@ import { useJourneyStore } from './store/useJourneyStore';
 import { usePlanetStore } from './store/usePlanetStore';
 import { useEngineStore } from './store/useEngineStore';
 import { usePerformanceStore } from './store/usePerformanceStore';
+import { useAccountStore } from './store/useAccountStore';
 import './styles/tokens.css';
 
 // ── PERSISTENT CANVAS CONTAINER ──────────────────────────────────
