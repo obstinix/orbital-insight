@@ -41,9 +41,13 @@ export async function askAIGuide(
     const decoder = new TextDecoder();
     let buffer = '';
 
-    while (true) {
+    let reading = true;
+    while (reading) {
       const { value, done } = await reader.read();
-      if (done) break;
+      if (done) {
+        reading = false;
+        break;
+      }
 
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split('\n');
