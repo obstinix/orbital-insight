@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { usePerformanceStore } from '../../store/usePerformanceStore';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 
 /**
  * Starts the application frame animation and rendering loop.
@@ -14,6 +15,7 @@ export function startRenderLoop(
   renderer: THREE.WebGLRenderer,
   scene: THREE.Scene,
   camera: THREE.Camera,
+  composer: EffectComposer | null,
   onFrame: (delta: number) => void
 ): { stop: () => void } {
   let animationFrameId: number | null = null;
@@ -78,8 +80,13 @@ export function startRenderLoop(
     // Run frame logical updates
     onFrame(delta);
 
-    // Execute WebGL render pass
-    renderer.render(scene, camera);
+    // Execute WebGL render pass or post-processing composer
+    const isLowPerformance = usePerformanceStore.getState().isLowPerformance;
+    if (composer && !isLowPerformance) {
+      composer.render();
+    } else {
+      renderer.render(scene, camera);
+    }
 
     animationFrameId = requestAnimationFrame(tick);
   };

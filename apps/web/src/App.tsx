@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import * as THREE from 'three';
-import { createRenderer } from './engine/core/Renderer';
+import { createRenderer, createComposer } from './engine/core/Renderer';
 import { createCameraController } from './engine/core/Camera';
 import { createSceneGraph, SceneLayer } from './engine/core/SceneGraph';
 import { startRenderLoop } from './engine/core/RenderLoop';
@@ -67,6 +67,9 @@ const ThreeCanvas: React.FC = () => {
     const camera = new THREE.PerspectiveCamera(60, aspect, 0.1, 20000);
     camera.position.set(0, 100, 350); // Set camera slightly higher and further back to see orbits
 
+    // 1b. Initialize post-processing pipeline
+    const composer = createComposer(renderer, sceneGraph.scene, camera);
+
     const cameraController = createCameraController(camera, canvas);
     cameraController.setOrbitTarget(new THREE.Vector3(0, 0, 0));
 
@@ -130,7 +133,7 @@ const ThreeCanvas: React.FC = () => {
 
     // 4. Run loop
     let elapsedSeconds = 0;
-    const loop = startRenderLoop(renderer, sceneGraph.scene, camera, (delta) => {
+    const loop = startRenderLoop(renderer, sceneGraph.scene, camera, composer, (delta) => {
       elapsedSeconds += delta;
 
       // Update virtual date with time controller
@@ -206,6 +209,7 @@ const ThreeCanvas: React.FC = () => {
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height, false);
+      composer.setSize(width, height);
     };
     window.addEventListener('resize', handleResize);
 
@@ -233,6 +237,7 @@ const ThreeCanvas: React.FC = () => {
       constellationLines.dispose();
       exoplanetRenderer.dispose();
       audioEngine.dispose();
+      composer.dispose();
       renderer.dispose();
     };
   }, [isInitialized]);
