@@ -2,7 +2,7 @@
   "id": "mars",
   "name": "Mars",
   "radius_km": 3389.5,
-  "mass_kg": 6.39e23,
+  "mass_kg": 6.39e+23,
   "orbital_period_days": 686.98,
   "rotation_period_hours": 24.62,
   "axial_tilt_deg": 25.19,
@@ -15,12 +15,24 @@
   },
   "atmosphere": {
     "radius_scale": 1.015,
-    "rayleigh": [0.65, 0.45, 0.35],
+    "rayleigh": [
+      0.65,
+      0.45,
+      0.35
+    ],
     "density": 0.35
   },
-  "moons": ["phobos", "deimos"],
+  "moons": [
+    "phobos",
+    "deimos"
+  ],
   "facts": {
     "source": "NASA Solar System Exploration",
-    "url": "https://solarsystem.nasa.gov/planets/mars/overview/"
+    "url": "https://solarsystem.nasa.gov/planets/mars/overview/",
+    "fun_facts": [
+      "Mars is known as the Red Planet because iron minerals in its soil oxidize, or rust, making the soil look red.",
+      "Mars has two small moons, Phobos and Deimos, which may be captured asteroids.",
+      "Mars is home to Olympus Mons, the largest volcano in the solar system, three times taller than Mt. Everest."
+    ]
   }
 }
