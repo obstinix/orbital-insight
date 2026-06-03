@@ -12,6 +12,12 @@ import jupiterData from '../../../../packages/content/solar-system/jupiter.json'
 import saturnData from '../../../../packages/content/solar-system/saturn.json';
 import uranusData from '../../../../packages/content/solar-system/uranus.json';
 import neptuneData from '../../../../packages/content/solar-system/neptune.json';
+import ioData from '../../../../packages/content/solar-system/io.json';
+import europaData from '../../../../packages/content/solar-system/europa.json';
+import ganymedeData from '../../../../packages/content/solar-system/ganymede.json';
+import callistoData from '../../../../packages/content/solar-system/callisto.json';
+import titanData from '../../../../packages/content/solar-system/titan.json';
+import enceladusData from '../../../../packages/content/solar-system/enceladus.json';
 
 export const planetRegistry: Record<string, PlanetConfig> = {
   sun: sunData as PlanetConfig,
@@ -24,6 +30,12 @@ export const planetRegistry: Record<string, PlanetConfig> = {
   saturn: saturnData as PlanetConfig,
   uranus: uranusData as PlanetConfig,
   neptune: neptuneData as PlanetConfig,
+  io: ioData as PlanetConfig,
+  europa: europaData as PlanetConfig,
+  ganymede: ganymedeData as PlanetConfig,
+  callisto: callistoData as PlanetConfig,
+  titan: titanData as PlanetConfig,
+  enceladus: enceladusData as PlanetConfig,
 };
 
 interface PlanetState {
