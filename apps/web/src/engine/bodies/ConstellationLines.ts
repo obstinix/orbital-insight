@@ -50,7 +50,14 @@ export class ConstellationLines {
 
   private parseCatalog(): void {
     // Cast and load data
-    const rawData = constellationsData as any[];
+    const rawData = constellationsData as unknown as Array<{
+      id: string;
+      name: string;
+      abbreviation: string;
+      mythology: string;
+      stars: Record<string, { name: string; ra: number; dec: number }>;
+      connections: [string, string][];
+    }>;
     
     this.constellations = rawData.map((c) => {
       const parsedStars: Record<string, ConstellationStar> = {};
