@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { ClerkProvider } from '@clerk/clerk-react';
+import { AccountButton } from './ui/AccountButton';
 import { InfoPanel } from './ui/InfoPanel';
 import { TimeControls } from './ui/TimeControls';
 import { ChapterSelector } from './ui/ChapterSelector';
@@ -212,6 +214,9 @@ const LeftNavigationPanel: React.FC = () => {
           </Link>
         );
       })}
+      <div style={{ marginTop: 'var(--space-2)', borderTop: '1px solid rgba(74, 144, 226, 0.15)', paddingTop: 'var(--space-2)' }}>
+        <AccountButton />
+      </div>
     </nav>
   );
 };
@@ -386,9 +391,13 @@ function AppContent() {
 }
 
 export default function App() {
+  const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_bW9jay1jbGVyay1rZXktOTkuY2xlcmsuYWNjb3VudHMuZGV2JA';
+
   return (
-    <HashRouter>
-      <AppContent />
-    </HashRouter>
+    <ClerkProvider publishableKey={clerkPubKey}>
+      <HashRouter>
+        <AppContent />
+      </HashRouter>
+    </ClerkProvider>
   );
 }
