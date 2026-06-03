@@ -12,22 +12,38 @@ export interface Chapter {
 export const CHAPTERS: Chapter[] = [
   {
     id: 1,
-    title: "Cradle of Humanity",
+    title: "Earth Atmospheric Entry",
     subtitle: "Inner Solar System // Terrestrial Sector",
     focusId: "earth",
-    scaleLabel: "384,400 km (Lunar Distance)",
-    description: "Orbiting Earth, our blue sanctuary. Safely protected by the magnetosphere, we observe the Moon locked in tidally bound sync."
+    scaleLabel: "100 km (Thermosphere)",
+    description: "Initiating spacecraft entry into Earth's upper atmosphere. Dynamic heat shielding engaged as we drop below orbital altitude."
   },
   {
     id: 2,
-    title: "Inner Sanctuaries",
-    subtitle: "Mars & The Asteroid Gate",
+    title: "Solar System Flyover",
+    subtitle: "Mars & Interplanetary Corridor",
     focusId: "mars",
     scaleLabel: "1.52 AU",
-    description: "Venturing to Mars, the red frontier. Beyond lies the asteroid belt, a rocky graveyard dating to the solar system's birth."
+    description: "Engaging low-impulse cruise through the inner solar system, executing high-speed flybys of Mars and lunar waypoints."
   },
   {
     id: 3,
+    title: "Sun & Heliosphere",
+    subtitle: "Gas Giant Sector // Coronal Ingress",
+    focusId: "sun",
+    scaleLabel: "0.0046 AU (Solar Corona)",
+    description: "Braving extreme solar radiation inside the Sun's outer corona, tracking magnetic loops and the solar wind origin."
+  },
+  {
+    id: 4,
+    title: "Alpha Centauri Approach",
+    subtitle: "Interstellar Crossing Terminal",
+    focusId: "alphacentauri",
+    scaleLabel: "4.3 Light Years",
+    description: "Decelerating from relativistic speed as we approach the Alpha Centauri trinary system, scanning for exoplanet signatures."
+  },
+  {
+    id: 5,
     title: "Sovereign of Storms",
     subtitle: "Gas Giant Sector // Jupiter Orbit",
     focusId: "jupiter",
@@ -35,28 +51,12 @@ export const CHAPTERS: Chapter[] = [
     description: "Approaching Jupiter, a planet larger than all others combined. Orbiting in severe magnetic radiation belts amidst 95 moons."
   },
   {
-    id: 4,
+    id: 6,
     title: "Icy Sentinels",
     subtitle: "Ring Lord Saturn & Outer Giants",
     focusId: "saturn",
     scaleLabel: "9.58 AU",
     description: "Hovering near Saturn's pure water ice rings. Beyond lie Uranus and Neptune, cold methane-rich giants at the solar system's edge."
-  },
-  {
-    id: 5,
-    title: "Interstellar Dawn",
-    subtitle: "The Heliosphere & Kuiper Belt",
-    focusId: "kuiper",
-    scaleLabel: "120 AU",
-    description: "Crossing the heliopause where solar winds halt. Looking back, our Sun is a bright speck in a sea of freezing dust and Oort debris."
-  },
-  {
-    id: 6,
-    title: "Nearest Neighbors",
-    subtitle: "Alpha Centauri Alpha & Proxima",
-    focusId: "alphacentauri",
-    scaleLabel: "4.3 Light Years",
-    description: "Arriving at the nearest star system. A triple star configuration consisting of Alpha Centauri A, B, and the red dwarf Proxima."
   },
   {
     id: 7,
@@ -79,13 +79,21 @@ export const CHAPTERS: Chapter[] = [
 interface JourneyState {
   currentChapterId: number;
   isTransitioning: boolean;
+  isPaused: boolean;
+  pausedMessage: string;
   setCurrentChapterId: (id: number) => void;
   setIsTransitioning: (val: boolean) => void;
+  setIsPaused: (val: boolean) => void;
+  setPausedMessage: (msg: string) => void;
 }
 
 export const useJourneyStore = create<JourneyState>((set) => ({
   currentChapterId: 1,
   isTransitioning: false,
+  isPaused: false,
+  pausedMessage: '',
   setCurrentChapterId: (id) => set({ currentChapterId: id }),
   setIsTransitioning: (val) => set({ isTransitioning: val }),
+  setIsPaused: (val) => set({ isPaused: val }),
+  setPausedMessage: (msg) => set({ pausedMessage: msg }),
 }));
