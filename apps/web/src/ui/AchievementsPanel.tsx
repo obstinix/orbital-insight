@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAchievementStore } from '../store/useAchievementStore';
 import { useAccountStore } from '../store/useAccountStore';
+import { ConfirmModal } from './ConfirmModal';
 
 const AVATAR_OPTIONS = ['🚀', '👨‍🚀', '👽', '🪐', '🛰️', '🛸', '☄️', '🌌', '🔭'];
 
@@ -15,6 +16,7 @@ export const AchievementsPanel: React.FC = () => {
   // Share Card Modal state
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareSuccess, setShareSuccess] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   // Focus and close share modal via keyboard
   useEffect(() => {
@@ -45,12 +47,15 @@ export const AchievementsPanel: React.FC = () => {
   };
 
   const handleResetAll = () => {
-    if (window.confirm('WIPE EXPLORATION DATABASE? This will clear all achievements, XP, and custom profile settings.')) {
-      resetAchievements();
-      resetAccount();
-      setTempUsername('Explorer One');
-      setTempAvatar('🚀');
-    }
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmReset = () => {
+    resetAchievements();
+    resetAccount();
+    setTempUsername('Explorer One');
+    setTempAvatar('🚀');
+    setIsConfirmOpen(false);
   };
 
   const handleShareLog = () => {
@@ -478,6 +483,17 @@ export const AchievementsPanel: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Confirm Database Wipe Modal */}
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        title="CRITICAL: TELEMETRY PURGE"
+        message="Are you sure you want to wipe the exploration database? This will permanently delete all achievements, XP, and customized settings."
+        confirmLabel="ENGAGE PURGE"
+        cancelLabel="ABORT DETONATION"
+        onConfirm={handleConfirmReset}
+        onCancel={() => setIsConfirmOpen(false)}
+      />
     </div>
   );
 };
