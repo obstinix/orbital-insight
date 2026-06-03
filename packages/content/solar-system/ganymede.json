@@ -1,0 +1,24 @@
+{
+  "id": "ganymede",
+  "name": "Ganymede",
+  "radius_km": 2634.1,
+  "mass_kg": 1.482e+23,
+  "orbital_period_days": 7.155,
+  "rotation_period_hours": 171.7,
+  "axial_tilt_deg": 0.2,
+  "semi_major_axis_au": 0.00716,
+  "eccentricity": 0.0013,
+  "inclination_deg": 0.2,
+  "textures": {
+    "diffuse": "ganymede_diffuse.basis"
+  },
+  "moons": [],
+  "facts": {
+    "source": "NASA Solar System Exploration",
+    "url": "https://solarsystem.nasa.gov/moons/ganymede/in-depth/",
+    "fun_facts": [
+      "Ganymede is the largest moon in the solar system, even larger than the planet Mercury.",
+      "Ganymede is the only moon in the solar system known to have its own internally generated magnetic field."
+    ]
+  }
+}
