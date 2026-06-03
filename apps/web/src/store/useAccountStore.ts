@@ -121,7 +121,9 @@ export const useAccountStore = create<AccountState>()(
             const achievementStore = (await import('./useAchievementStore')).useAchievementStore;
             const achievementsList = achievementStore.getState().achievements;
             const updatedAchievements = achievementsList.map(a => {
-              const unlocked = data.achievements.find((dbA: any) => dbA.achievement_id === a.id);
+              const unlocked = data.achievements.find(
+                (dbA: { achievement_id: string; unlocked_at: string }) => dbA.achievement_id === a.id
+              );
               return {
                 ...a,
                 unlockedAt: unlocked ? new Date(unlocked.unlocked_at).getTime() : null
