@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { Type } from '@sinclair/typebox';
 import { Anthropic } from '@anthropic-ai/sdk';
 import { getEnv } from '../config/env.js';
@@ -67,7 +67,13 @@ const PLANET_FACTS: Record<string, { overview: string; atmosphere: string; gravi
 };
 
 // Simulated stream helper for key verification failure or local mock fallback
-function runFallbackSimulatedStream(reply: any, request: any, facts: any, message: string, normalizedPlanetId: string) {
+function runFallbackSimulatedStream(
+  reply: FastifyReply,
+  request: FastifyRequest,
+  facts: { overview: string; atmosphere: string; gravity: string; life: string },
+  message: string,
+  normalizedPlanetId: string
+) {
   const msgLower = message.toLowerCase();
   let responseBody = facts.overview;
 
@@ -104,7 +110,7 @@ function runFallbackSimulatedStream(reply: any, request: any, facts: any, messag
 }
 
 // Authorization middleware placeholder (Phase 1 basic auth check)
-const authPreHandler = async (request: any, reply: any) => {
+const authPreHandler = async (request: FastifyRequest, reply: FastifyReply) => {
   const env = getEnv();
   // Basic session authentication block (fully expanded in Phase 2 with Clerk integration)
   if (env.NODE_ENV === 'production') {
@@ -259,9 +265,13 @@ Cite relevant scientific facts or data where appropriate. Keep your response con
         });
 
         const reader = response.body.getReader();
-        while (true) {
+        let reading = true;
+        while (reading) {
           const { value, done } = await reader.read();
-          if (done) break;
+          if (done) {
+            reading = false;
+            break;
+          }
           reply.raw.write(value);
         }
         reply.raw.end();
