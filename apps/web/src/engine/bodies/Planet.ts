@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { PlanetConfig } from '@orbital-insight/shared-types';
+import { loadTexture } from '../loaders/AssetManager';
 import atmosphereVertexShader from '../shaders/atmosphere.vert';
 import atmosphereFragmentShader from '../shaders/atmosphere.frag';
 
@@ -15,6 +16,7 @@ export class Planet {
   public group: THREE.Group;
   public bodyMesh: THREE.LOD;
   public atmosphereMesh: THREE.Mesh | null = null;
+  public cloudsMesh: THREE.Mesh | null = null;
   public orbitLine: THREE.Line | null = null;
 
   private rotationSpeed: number; // Rad/sec
@@ -61,6 +63,57 @@ export class Planet {
       roughness: 0.8,
       metalness: 0.1,
     });
+
+    // Asynchronously load and apply Basis Universal or standard texture maps
+    if (config.textures) {
+      if (config.textures.diffuse) {
+        loadTexture(config.textures.diffuse).then((texture) => {
+          planetMaterial.map = texture;
+          planetMaterial.color.setHex(0xffffff); // clear solid fallback tint
+          planetMaterial.needsUpdate = true;
+        });
+      }
+      if (config.textures.normal) {
+        loadTexture(config.textures.normal).then((texture) => {
+          planetMaterial.normalMap = texture;
+          planetMaterial.normalScale.set(1.2, 1.2);
+          planetMaterial.needsUpdate = true;
+        });
+      }
+      if (config.textures.specular) {
+        loadTexture(config.textures.specular).then((texture) => {
+          planetMaterial.roughnessMap = texture;
+          planetMaterial.metalnessMap = texture;
+          planetMaterial.needsUpdate = true;
+        });
+      }
+      if (config.textures.emissive) {
+        loadTexture(config.textures.emissive).then((texture) => {
+          planetMaterial.emissiveMap = texture;
+          planetMaterial.emissive.setHex(0xffffff);
+          planetMaterial.needsUpdate = true;
+        });
+      }
+    }
+
+    // 3.1 Earth-like cloud layer sphere addition
+    if (config.textures && config.textures.clouds) {
+      const cloudGeom = new THREE.SphereGeometry(visualRadius * 1.008, 64, 64);
+      const cloudMat = new THREE.MeshStandardMaterial({
+        transparent: true,
+        opacity: 0.0, // starts invisible until loaded
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      });
+      this.cloudsMesh = new THREE.Mesh(cloudGeom, cloudMat);
+      this.group.add(this.cloudsMesh);
+
+      loadTexture(config.textures.clouds).then((texture) => {
+        cloudMat.map = texture;
+        cloudMat.opacity = 0.45;
+        cloudMat.needsUpdate = true;
+      });
+    }
 
     // LOD Level 0: Close-up (Distance < 50)
     const geom0 = new THREE.SphereGeometry(visualRadius, 64, 64);
@@ -169,6 +222,11 @@ export class Planet {
       const position = this.solveKeplerOrbit(simulatedDate);
       // Offset by parent position (for moons)
       this.group.position.copy(position).add(parentPos);
+    }
+
+    // 3. Rotate clouds at a slightly offset rate
+    if (this.cloudsMesh) {
+      this.cloudsMesh.rotation.y = hoursSinceBase * (this.rotationSpeed * 1.08 * 10.0);
     }
   }
 
