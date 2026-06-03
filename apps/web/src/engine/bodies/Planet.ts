@@ -30,11 +30,13 @@ export class Planet {
     this.group.name = `planet_group_${this.id}`;
 
     // 1. Calculate visual radius (Sun is huge, planets smaller but scaled up compared to real space)
+    const MOON_IDS = ['moon', 'io', 'europa', 'ganymede', 'callisto', 'titan', 'enceladus'];
     let visualRadius = config.radius_km * VISUAL_PLANET_SCALE;
     if (config.id === 'sun') {
       visualRadius = 15.0; // Hard-coded Sun size
-    } else if (config.id === 'moon') {
-      visualRadius = 0.8;
+    } else if (MOON_IDS.includes(config.id)) {
+      // Scale moons to be distinct but smaller than planets (0.5 to 1.2 units)
+      visualRadius = Math.max(0.5, Math.min(config.radius_km * VISUAL_PLANET_SCALE * 0.4, 1.2));
     } else {
       // Capping visual radius sizes so they are distinguishable and fit inside orbits
       visualRadius = Math.max(1.5, Math.min(visualRadius, 7.5));
@@ -194,7 +196,7 @@ export class Planet {
     }
 
     // 6. Pre-calculate static Keplerian Orbit Line
-    if (config.id !== 'sun' && config.id !== 'moon') {
+    if (config.id !== 'sun') {
       this.orbitLine = this.generateOrbitLine();
     }
   }
@@ -231,10 +233,27 @@ export class Planet {
   }
 
   /**
+   * Helper to retrieve visually scaled semi-major axis values for moons.
+   */
+  private getOrbitSemiMajorAxis(): number {
+    const a = this.config.semi_major_axis_au * AU_TO_UNITS;
+    switch (this.id) {
+      case 'moon': return a * 12.0;      // Earth's Moon: ~4.6 units (Earth radius: 1.5)
+      case 'io': return a * 25.0;        // Io: ~10.5 units (Jupiter radius: 7.5)
+      case 'europa': return a * 25.0;    // Europa: ~16.8 units
+      case 'ganymede': return a * 25.0;  // Ganymede: ~26.8 units
+      case 'callisto': return a * 25.0;  // Callisto: ~47.2 units
+      case 'enceladus': return a * 70.0; // Enceladus: ~16.7 units (Saturn radius: 6.0 + rings)
+      case 'titan': return a * 30.0;     // Titan: ~36.7 units
+      default: return a;
+    }
+  }
+
+  /**
    * Evaluates Keplerian orbit equations to find heliocentric positions.
    */
   private solveKeplerOrbit(simulatedDate: Date): THREE.Vector3 {
-    const a = this.config.semi_major_axis_au * AU_TO_UNITS;
+    const a = this.getOrbitSemiMajorAxis();
     const e = this.config.eccentricity;
     const i = THREE.MathUtils.degToRad(this.config.inclination_deg);
     const T = this.config.orbital_period_days;
@@ -270,7 +289,7 @@ export class Planet {
    */
   private generateOrbitLine(): THREE.Line {
     const points: THREE.Vector3[] = [];
-    const a = this.config.semi_major_axis_au * AU_TO_UNITS;
+    const a = this.getOrbitSemiMajorAxis();
     const e = this.config.eccentricity;
     const i = THREE.MathUtils.degToRad(this.config.inclination_deg);
     const segments = 128;
