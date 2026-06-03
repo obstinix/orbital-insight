@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { usePlanetStore, planetRegistry } from '../store/usePlanetStore';
 import { useEngineStore } from '../store/useEngineStore';
@@ -12,6 +12,23 @@ export const InfoPanel: React.FC = () => {
   const panelRef = useRef<HTMLDivElement>(null);
 
   const config = selectedPlanetId ? planetRegistry[selectedPlanetId] : null;
+  const [activeFactIndex, setActiveFactIndex] = useState(0);
+
+  // Reset carousel index when planet changes
+  useEffect(() => {
+    setActiveFactIndex(0);
+  }, [selectedPlanetId]);
+
+  // Auto-rotate fun facts every 8 seconds
+  useEffect(() => {
+    if (!config?.facts?.fun_facts || config.facts.fun_facts.length === 0) return;
+
+    const timer = setInterval(() => {
+      setActiveFactIndex((prev) => (prev + 1) % config.facts.fun_facts!.length);
+    }, 8000);
+
+    return () => clearInterval(timer);
+  }, [config, selectedPlanetId]);
 
   // 1. Focus trap & Escape key closing for accessibility compliance
   useEffect(() => {
@@ -200,6 +217,83 @@ export const InfoPanel: React.FC = () => {
             <strong style={{ float: 'right' }}>{config.axial_tilt_deg}°</strong>
           </div>
         </div>
+
+        {/* Fun Facts Carousel */}
+        {config.facts.fun_facts && config.facts.fun_facts.length > 0 && (
+          <div
+            style={{
+              background: 'rgba(0, 240, 255, 0.04)',
+              border: '1px solid rgba(0, 240, 255, 0.15)',
+              borderRadius: '6px',
+              padding: '0.8rem 1rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.5rem',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.65rem', color: 'var(--color-teal-cyan)', fontFamily: 'var(--font-mono)', letterSpacing: '1.5px', fontWeight: 'bold' }}>
+                DID YOU KNOW?
+              </span>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button
+                  onClick={() => setActiveFactIndex((prev) => (prev - 1 + config.facts.fun_facts!.length) % config.facts.fun_facts!.length)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'var(--color-teal-cyan)',
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                    padding: '2px 4px',
+                  }}
+                  aria-label="Previous fact"
+                >
+                  ◀
+                </button>
+                <span style={{ fontSize: '0.65rem', color: 'var(--color-muted)', fontFamily: 'var(--font-mono)' }}>
+                  {activeFactIndex + 1}/{config.facts.fun_facts.length}
+                </span>
+                <button
+                  onClick={() => setActiveFactIndex((prev) => (prev + 1) % config.facts.fun_facts!.length)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'var(--color-teal-cyan)',
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                    padding: '2px 4px',
+                  }}
+                  aria-label="Next fact"
+                >
+                  ▶
+                </button>
+              </div>
+            </div>
+
+            <div style={{ minHeight: '52px', display: 'flex', alignItems: 'center' }}>
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={activeFactIndex}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.25, ease: 'easeInOut' }}
+                  style={{
+                    fontSize: '0.75rem',
+                    color: 'var(--color-starlight)',
+                    lineHeight: '1.45',
+                    margin: 0,
+                    fontStyle: 'italic'
+                  }}
+                >
+                  {config.facts.fun_facts[activeFactIndex]}
+                </motion.p>
+              </AnimatePresence>
+            </div>
+          </div>
+        )}
 
         {/* Overview facts link */}
         <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--color-muted)' }}>
