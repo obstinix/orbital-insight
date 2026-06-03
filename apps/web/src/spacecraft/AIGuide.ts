@@ -20,8 +20,8 @@ export async function askAIGuide(
   onError: (error: Error) => void
 ): Promise<void> {
   try {
-    // API server runs on port 3000
-    const response = await fetch('http://localhost:3000/api/guide', {
+    const API_BASE = import.meta.env.VITE_API_URL || '';
+    const response = await fetch(`${API_BASE}/api/guide`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -29,7 +29,8 @@ export const MissionsPanel: React.FC = () => {
 
     const fetchTelemetry = async () => {
       try {
-        const res = await fetch('http://localhost:3000/api/missions/iss');
+        const API_BASE = import.meta.env.VITE_API_URL || '';
+        const res = await fetch(`${API_BASE}/api/missions/iss`);
         if (!res.ok) throw new Error('API down');
         const data = await res.json();
         
