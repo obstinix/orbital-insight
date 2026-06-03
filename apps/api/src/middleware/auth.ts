@@ -46,7 +46,7 @@ export async function authenticate(request: FastifyRequest, reply: FastifyReply)
   }
 
   try {
-    const verified = await clerkClient.verifyToken(token);
+    const verified = await (clerkClient as unknown as { verifyToken: (token: string) => Promise<{ sub: string }> }).verifyToken(token);
     request.userId = verified.sub;
   } catch (err) {
     console.error('[Auth] JWT Verification failed:', err);
