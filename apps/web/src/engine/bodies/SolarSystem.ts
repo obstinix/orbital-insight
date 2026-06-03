@@ -13,6 +13,12 @@ import jupiterData from '../../../../../packages/content/solar-system/jupiter.js
 import saturnData from '../../../../../packages/content/solar-system/saturn.json';
 import uranusData from '../../../../../packages/content/solar-system/uranus.json';
 import neptuneData from '../../../../../packages/content/solar-system/neptune.json';
+import ioData from '../../../../../packages/content/solar-system/io.json';
+import europaData from '../../../../../packages/content/solar-system/europa.json';
+import ganymedeData from '../../../../../packages/content/solar-system/ganymede.json';
+import callistoData from '../../../../../packages/content/solar-system/callisto.json';
+import titanData from '../../../../../packages/content/solar-system/titan.json';
+import enceladusData from '../../../../../packages/content/solar-system/enceladus.json';
 
 const CORONA_PARTICLE_COUNT = 100000;
 const SUN_RADIUS = 15.0;
@@ -47,16 +53,44 @@ export class SolarSystem {
       saturnData as PlanetConfig,
       uranusData as PlanetConfig,
       neptuneData as PlanetConfig,
+      ioData as PlanetConfig,
+      europaData as PlanetConfig,
+      ganymedeData as PlanetConfig,
+      callistoData as PlanetConfig,
+      titanData as PlanetConfig,
+      enceladusData as PlanetConfig,
     ];
 
+    // Lookup parent-child relationships for moons
+    const moonParentMap: Record<string, string> = {
+      moon: 'earth',
+      io: 'jupiter',
+      europa: 'jupiter',
+      ganymede: 'jupiter',
+      callisto: 'jupiter',
+      titan: 'saturn',
+      enceladus: 'saturn',
+    };
+
+    // First pass: Instantiate all planets
     for (const config of planetConfigs) {
       const planet = new Planet(config);
       this.planets.push(planet);
       this.group.add(planet.group);
+    }
 
-      // Add orbit line if available
+    // Second pass: Add orbit lines to correct parent groups (or solar system group)
+    for (const planet of this.planets) {
       if (planet.orbitLine) {
-        this.orbitLinesGroup.add(planet.orbitLine);
+        if (planet.id in moonParentMap) {
+          const parentId = moonParentMap[planet.id];
+          const parentPlanet = this.planets.find((p) => p.id === parentId);
+          if (parentPlanet) {
+            parentPlanet.group.add(planet.orbitLine);
+          }
+        } else {
+          this.orbitLinesGroup.add(planet.orbitLine);
+        }
       }
     }
 
@@ -151,17 +185,29 @@ export class SolarSystem {
     posAttribute.needsUpdate = true;
 
     // 2. Update planets and moon positions
-    const earth = this.planets.find((p) => p.id === 'earth');
-    const moon = this.planets.find((p) => p.id === 'moon');
+    const moonParentMap: Record<string, string> = {
+      moon: 'earth',
+      io: 'jupiter',
+      europa: 'jupiter',
+      ganymede: 'jupiter',
+      callisto: 'jupiter',
+      titan: 'saturn',
+      enceladus: 'saturn',
+    };
 
+    // Update planets and sun first (non-moons)
     for (const planet of this.planets) {
-      if (planet.id === 'moon') continue; // Moon handled separately
+      if (planet.id in moonParentMap) continue;
       planet.update(simulatedDate);
     }
 
-    if (earth && moon) {
-      // Calculate moon heliocentric position relative to Earth
-      moon.update(simulatedDate, earth.group.position);
+    // Now update moons relative to their parent planet positions
+    for (const planet of this.planets) {
+      if (!(planet.id in moonParentMap)) continue;
+      const parentId = moonParentMap[planet.id];
+      const parentPlanet = this.planets.find((p) => p.id === parentId);
+      const parentPos = parentPlanet ? parentPlanet.group.position : new THREE.Vector3(0, 0, 0);
+      planet.update(simulatedDate, parentPos);
     }
   }
 
