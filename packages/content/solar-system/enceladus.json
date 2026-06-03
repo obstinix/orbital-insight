@@ -1,0 +1,24 @@
+{
+  "id": "enceladus",
+  "name": "Enceladus",
+  "radius_km": 252.1,
+  "mass_kg": 1.08e+20,
+  "orbital_period_days": 1.37,
+  "rotation_period_hours": 32.88,
+  "axial_tilt_deg": 0.0,
+  "semi_major_axis_au": 0.00159,
+  "eccentricity": 0.0047,
+  "inclination_deg": 0.019,
+  "textures": {
+    "diffuse": "enceladus_diffuse.basis"
+  },
+  "moons": [],
+  "facts": {
+    "source": "NASA Solar System Exploration",
+    "url": "https://solarsystem.nasa.gov/moons/enceladus/in-depth/",
+    "fun_facts": [
+      "Enceladus has massive geysers at its south pole that spray water ice and organic compounds from a global subsurface ocean into space.",
+      "The ice sprayed by Enceladus' geysers feeds Saturn's diffuse E-ring."
+    ]
+  }
+}
