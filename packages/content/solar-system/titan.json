@@ -1,0 +1,24 @@
+{
+  "id": "titan",
+  "name": "Titan",
+  "radius_km": 2574.7,
+  "mass_kg": 1.345e+23,
+  "orbital_period_days": 15.945,
+  "rotation_period_hours": 382.7,
+  "axial_tilt_deg": 0.3,
+  "semi_major_axis_au": 0.00817,
+  "eccentricity": 0.0288,
+  "inclination_deg": 0.358,
+  "textures": {
+    "diffuse": "titan_diffuse.basis"
+  },
+  "moons": [],
+  "facts": {
+    "source": "NASA Solar System Exploration",
+    "url": "https://solarsystem.nasa.gov/moons/titan/in-depth/",
+    "fun_facts": [
+      "Titan is the only moon in the solar system with a dense atmosphere and the only object besides Earth known to have stable bodies of surface liquid (methane and ethane lakes).",
+      "Titan is Saturn's largest moon and the second largest moon in the solar system."
+    ]
+  }
+}
