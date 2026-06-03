@@ -5,6 +5,8 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
   ANTHROPIC_API_KEY: z.string().min(1, 'ANTHROPIC_API_KEY is required').default('mock-key'),
   ELEVENLABS_API_KEY: z.string().min(1, 'ELEVENLABS_API_KEY is required').default('mock-key'),
+  DATABASE_URL: z.string().optional(),
+  REDIS_URL: z.string().optional(),
   ALLOWED_ORIGINS: z.string().optional(),
 });
 
