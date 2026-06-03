@@ -7,7 +7,7 @@ declare module 'fastify' {
   }
 }
 
-let clerkClient: any = null;
+let clerkClient: ReturnType<typeof createClerkClient> | null = null;
 const secretKey = process.env.CLERK_SECRET_KEY;
 
 if (secretKey) {
@@ -48,7 +48,7 @@ export async function authenticate(request: FastifyRequest, reply: FastifyReply)
   try {
     const verified = await clerkClient.verifyToken(token);
     request.userId = verified.sub;
-  } catch (err: any) {
+  } catch (err) {
     console.error('[Auth] JWT Verification failed:', err);
     
     // Developer fallback in development environment even with clerkClient active
@@ -57,6 +57,7 @@ export async function authenticate(request: FastifyRequest, reply: FastifyReply)
       return;
     }
 
-    reply.status(401).send({ error: 'Unauthorized', message: `Token verification failed: ${err.message}` });
+    const message = err instanceof Error ? err.message : String(err);
+    reply.status(401).send({ error: 'Unauthorized', message: `Token verification failed: ${message}` });
   }
 }
