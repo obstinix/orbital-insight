@@ -1,6 +1,14 @@
 import { FastifyInstance } from 'fastify';
 import { Type } from '@sinclair/typebox';
 
+interface OpenNotifyISSResponse {
+  timestamp?: number;
+  iss_position?: {
+    latitude: string;
+    longitude: string;
+  };
+}
+
 export default async function missionRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/missions/iss',
@@ -31,7 +39,7 @@ export default async function missionRoutes(fastify: FastifyInstance) {
           throw new Error('ISS API response failure');
         }
 
-        const data = (await response.json()) as any;
+        const data = (await response.json()) as OpenNotifyISSResponse;
         if (data && data.iss_position) {
           return {
             timestamp: data.timestamp || Math.floor(Date.now() / 1000),
