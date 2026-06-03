@@ -4,10 +4,10 @@ import { SpacecraftController } from '../spacecraft/SpacecraftController';
 import { useJourneyStore, CHAPTERS } from '../store/useJourneyStore';
 import { useEngineStore } from '../store/useEngineStore';
 import { usePlanetStore } from '../store/usePlanetStore';
-import blackholeVert from '../shaders/blackhole.vert';
-import blackholeFrag from '../shaders/blackhole.frag';
-import nebulaVert from '../shaders/nebula.vert';
-import nebulaFrag from '../shaders/nebula.frag';
+import blackholeVert from '../engine/shaders/blackhole.vert';
+import blackholeFrag from '../engine/shaders/blackhole.frag';
+import nebulaVert from '../engine/shaders/nebula.vert';
+import nebulaFrag from '../engine/shaders/nebula.frag';
 
 export class JourneyMode {
   private scene: THREE.Scene;
