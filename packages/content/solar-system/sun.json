@@ -2,13 +2,13 @@
   "id": "sun",
   "name": "Sun",
   "radius_km": 696340,
-  "mass_kg": 1.989e30,
-  "orbital_period_days": 0.0,
+  "mass_kg": 1.989e+30,
+  "orbital_period_days": 0,
   "rotation_period_hours": 609.6,
   "axial_tilt_deg": 7.25,
-  "semi_major_axis_au": 0.0,
-  "eccentricity": 0.0,
-  "inclination_deg": 0.0,
+  "semi_major_axis_au": 0,
+  "eccentricity": 0,
+  "inclination_deg": 0,
   "textures": {
     "diffuse": "sun_diffuse.basis",
     "emissive": "sun_emissive.basis"
@@ -16,6 +16,11 @@
   "moons": [],
   "facts": {
     "source": "NASA Solar System Exploration",
-    "url": "https://solarsystem.nasa.gov/solar-system/sun/in-depth/"
+    "url": "https://solarsystem.nasa.gov/solar-system/sun/in-depth/",
+    "fun_facts": [
+      "The Sun accounts for 99.86% of the mass in the entire solar system.",
+      "One million Earths could fit inside the Sun.",
+      "Light from the Sun takes approximately 8 minutes and 20 seconds to reach Earth."
+    ]
   }
 }
