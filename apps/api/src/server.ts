@@ -5,9 +5,12 @@ import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import { Type } from '@sinclair/typebox';
+import { validateEnv, getEnv } from './config/env.js';
 import guideRoutes from './routes/guide.js';
 import missionRoutes from './routes/missions.js';
 
+// Validate environment variables on startup
+const env = validateEnv();
 
 const fastify = Fastify({
   logger: {
@@ -23,14 +26,34 @@ const fastify = Fastify({
 // Configure plugins asynchronously
 const bootstrap = async () => {
   // CORS configuration
+  const allowedOrigins: (string | RegExp)[] = [];
+  if (env.NODE_ENV === 'production') {
+    if (env.ALLOWED_ORIGINS) {
+      allowedOrigins.push(...env.ALLOWED_ORIGINS.split(',').map(o => o.trim()));
+    } else {
+      allowedOrigins.push(
+        'https://orbital-insight.com',
+        'https://staging.orbital-insight.com',
+        /\.orbital-insight\.com$/
+      );
+    }
+  } else {
+    // In dev, allow localhost development servers
+    allowedOrigins.push(
+      'http://localhost:5173',
+      'http://127.0.0.1:5173',
+      'http://localhost:3000'
+    );
+  }
+
   await fastify.register(cors, {
-    origin: true,
+    origin: allowedOrigins,
     credentials: true,
   });
 
   // Secure HTTP headers with Helmet (disable CSP in dev to avoid asset loads block)
   await fastify.register(helmet, {
-    contentSecurityPolicy: process.env.NODE_ENV === 'production',
+    contentSecurityPolicy: env.NODE_ENV === 'production',
   });
 
   // General Rate Limiting: 100 requests per minute per IP
@@ -105,7 +128,7 @@ const bootstrap = async () => {
   });
 };
 
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+const PORT = getEnv().PORT;
 
 const start = async () => {
   try {
