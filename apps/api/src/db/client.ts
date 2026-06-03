@@ -124,7 +124,7 @@ export async function query(text: string, params: unknown[] = []): Promise<pg.Qu
     return {
       rows: user ? [user] : [],
       rowCount: user ? 1 : 0,
-    } as pg.QueryResult;
+    } as unknown as pg.QueryResult;
   }
 
   // 2. Select achievements: select * from achievements where user_id = $1
@@ -134,7 +134,7 @@ export async function query(text: string, params: unknown[] = []): Promise<pg.Qu
     return {
       rows: list,
       rowCount: list.length,
-    } as pg.QueryResult;
+    } as unknown as pg.QueryResult;
   }
 
   // 3. Upsert user: insert into users (id, username, avatar, xp, level, rank) values ...
@@ -155,7 +155,7 @@ export async function query(text: string, params: unknown[] = []): Promise<pg.Qu
     return {
       rows: [updatedUser],
       rowCount: 1,
-    } as pg.QueryResult;
+    } as unknown as pg.QueryResult;
   }
 
   // 4. Insert achievement: insert into achievements (user_id, achievement_id) ...
@@ -175,7 +175,7 @@ export async function query(text: string, params: unknown[] = []): Promise<pg.Qu
     return {
       rows: [],
       rowCount: exists ? 0 : 1,
-    } as pg.QueryResult;
+    } as unknown as pg.QueryResult;
   }
 
   throw new Error(`Unsupported Mock SQL Query: ${text}`);
