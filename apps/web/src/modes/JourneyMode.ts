@@ -4,6 +4,8 @@ import { SpacecraftController } from '../spacecraft/SpacecraftController';
 import { useJourneyStore, CHAPTERS } from '../store/useJourneyStore';
 import { useEngineStore } from '../store/useEngineStore';
 import { usePlanetStore } from '../store/usePlanetStore';
+import blackholeVert from '../shaders/blackhole.vert';
+import blackholeFrag from '../shaders/blackhole.frag';
 
 export class JourneyMode {
   private scene: THREE.Scene;
@@ -14,6 +16,7 @@ export class JourneyMode {
   private oortCloudPoints: THREE.Points | null = null;
   private alphaCentauriGroup: THREE.Group | null = null;
   private blackHoleGroup: THREE.Group | null = null;
+  private blackHoleMaterial: THREE.ShaderMaterial | null = null;
   private cmbHorizonMesh: THREE.Mesh | null = null;
 
   constructor(scene: THREE.Scene, camera: THREE.Camera, spacecraft: SpacecraftController) {
@@ -76,24 +79,21 @@ export class JourneyMode {
     this.blackHoleGroup = new THREE.Group();
     this.blackHoleGroup.position.set(-5000, 600, -10000);
 
-    // Singularity core
-    const coreGeo = new THREE.SphereGeometry(25, 32, 32);
-    const coreMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
-    const core = new THREE.Mesh(coreGeo, coreMat);
-    this.blackHoleGroup.add(core);
-
-    // Relativistic accretion disk
-    const diskGeo = new THREE.RingGeometry(35, 120, 64);
-    diskGeo.rotateX(Math.PI / 2.2);
-    const diskMat = new THREE.MeshBasicMaterial({
-      color: 0xbd53ed,
-      side: THREE.DoubleSide,
+    this.blackHoleMaterial = new THREE.ShaderMaterial({
+      vertexShader: blackholeVert,
+      fragmentShader: blackholeFrag,
+      uniforms: {
+        uTime: { value: 0.0 },
+        uCameraPositionLocal: { value: new THREE.Vector3() },
+      },
       transparent: true,
-      opacity: 0.8,
-      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
     });
-    const disk = new THREE.Mesh(diskGeo, diskMat);
-    this.blackHoleGroup.add(disk);
+
+    const lensingSphereGeo = new THREE.SphereGeometry(140, 48, 48);
+    const lensingSphere = new THREE.Mesh(lensingSphereGeo, this.blackHoleMaterial);
+    lensingSphere.name = 'sagittarius_a_lensing';
+    this.blackHoleGroup.add(lensingSphere);
 
     this.scene.add(this.blackHoleGroup);
     this.blackHoleGroup.visible = false;
@@ -277,12 +277,11 @@ export class JourneyMode {
     if (this.alphaCentauriGroup && this.alphaCentauriGroup.visible) {
       this.alphaCentauriGroup.rotation.y = elapsedSeconds * 0.1;
     }
-    if (this.blackHoleGroup && this.blackHoleGroup.visible) {
-      // Accretion disk spin
-      const disk = this.blackHoleGroup.children[1];
-      if (disk) {
-        disk.rotation.z = -elapsedSeconds * 0.4;
-      }
+    if (this.blackHoleGroup && this.blackHoleGroup.visible && this.blackHoleMaterial) {
+      this.blackHoleMaterial.uniforms.uTime.value = elapsedSeconds;
+      
+      const localCam = this.camera.position.clone().sub(this.blackHoleGroup.position);
+      this.blackHoleMaterial.uniforms.uCameraPositionLocal.value.copy(localCam);
     }
     if (this.cmbHorizonMesh && this.cmbHorizonMesh.visible) {
       this.cmbHorizonMesh.rotation.y = elapsedSeconds * 0.005;
