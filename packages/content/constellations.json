@@ -104,5 +104,107 @@
       ["acrux", "gacrux"],
       ["mimosa", "imai"]
     ]
+  },
+  {
+    "id": "ursa_minor",
+    "name": "Ursa Minor",
+    "abbreviation": "UMi",
+    "mythology": "The Little Bear, representing Arcas, Callisto's son in Greek myth. It contains Polaris, the North Star, which marks the north celestial pole.",
+    "stars": {
+      "polaris": { "name": "Polaris", "ra": 2.53, "dec": 89.26 },
+      "yildun": { "name": "Yildun", "ra": 17.53, "dec": 86.59 },
+      "epsilon_umi": { "name": "Epsilon UMi", "ra": 16.76, "dec": 82.04 },
+      "zeta_umi": { "name": "Zeta UMi", "ra": 15.73, "dec": 77.79 },
+      "anwar": { "name": "Anwar al Farkadain", "ra": 16.29, "dec": 75.75 },
+      "kochab": { "name": "Kochab", "ra": 14.85, "dec": 74.16 },
+      "pherkad": { "name": "Pherkad", "ra": 15.34, "dec": 71.83 }
+    },
+    "connections": [
+      ["polaris", "yildun"],
+      ["yildun", "epsilon_umi"],
+      ["epsilon_umi", "zeta_umi"],
+      ["zeta_umi", "anwar"],
+      ["anwar", "kochab"],
+      ["kochab", "pherkad"],
+      ["pherkad", "zeta_umi"]
+    ]
+  },
+  {
+    "id": "pegasus",
+    "name": "Pegasus",
+    "abbreviation": "Peg",
+    "mythology": "The winged horse born from the blood of Medusa in Greek myth. Its body is marked by the prominent Great Square of Pegasus, which is shared with Andromeda.",
+    "stars": {
+      "markab": { "name": "Markab", "ra": 23.08, "dec": 15.21 },
+      "scheat": { "name": "Scheat", "ra": 23.06, "dec": 28.08 },
+      "alpheratz": { "name": "Alpheratz", "ra": 0.14, "dec": 29.09 },
+      "algenib": { "name": "Algenib", "ra": 0.22, "dec": 15.18 },
+      "enif": { "name": "Enif", "ra": 21.74, "dec": 9.88 },
+      "homam": { "name": "Homam", "ra": 22.69, "dec": 10.83 },
+      "biham": { "name": "Biham", "ra": 22.17, "dec": 6.20 },
+      "matar": { "name": "Matar", "ra": 22.72, "dec": 30.22 },
+      "sadalbari": { "name": "Sadalbari", "ra": 22.83, "dec": 24.60 }
+    },
+    "connections": [
+      ["markab", "scheat"],
+      ["scheat", "alpheratz"],
+      ["alpheratz", "algenib"],
+      ["algenib", "markab"],
+      ["markab", "homam"],
+      ["homam", "biham"],
+      ["biham", "enif"],
+      ["scheat", "matar"],
+      ["matar", "sadalbari"]
+    ]
+  },
+  {
+    "id": "taurus",
+    "name": "Taurus",
+    "abbreviation": "Tau",
+    "mythology": "The Bull, representing the disguise Zeus took to abduct Europa in Greek myth. It hosts Aldebaran, the Hyades cluster, and the Pleiades cluster.",
+    "stars": {
+      "aldebaran": { "name": "Aldebaran", "ra": 4.60, "dec": 16.51 },
+      "elnath": { "name": "Elnath", "ra": 5.44, "dec": 28.61 },
+      "alcyone": { "name": "Alcyone", "ra": 3.79, "dec": 24.11 },
+      "tianguan": { "name": "Tianguan", "ra": 5.63, "dec": 21.14 },
+      "ain": { "name": "Ain", "ra": 4.48, "dec": 19.18 },
+      "hyadum": { "name": "Hyadum I", "ra": 4.33, "dec": 15.63 },
+      "chamukuy": { "name": "Chamukuy", "ra": 4.48, "dec": 15.87 },
+      "bibing": { "name": "Bibing", "ra": 4.01, "dec": 12.49 }
+    },
+    "connections": [
+      ["hyadum", "chamukuy"],
+      ["chamukuy", "aldebaran"],
+      ["hyadum", "ain"],
+      ["ain", "elnath"],
+      ["aldebaran", "tianguan"],
+      ["ain", "alcyone"],
+      ["hyadum", "bibing"]
+    ]
+  },
+  {
+    "id": "gemini",
+    "name": "Gemini",
+    "abbreviation": "Gem",
+    "mythology": "The celestial twins Castor and Pollux of Greek myth, who were granted half-immortality by Zeus. The two bright stars marking their heads are visible side-by-side.",
+    "stars": {
+      "pollux": { "name": "Pollux", "ra": 7.76, "dec": 28.03 },
+      "castor": { "name": "Castor", "ra": 7.58, "dec": 31.89 },
+      "alhena": { "name": "Alhena", "ra": 6.63, "dec": 16.40 },
+      "mebsuta": { "name": "Mebsuta", "ra": 6.73, "dec": 25.13 },
+      "wasat": { "name": "Wasat", "ra": 7.34, "dec": 21.98 },
+      "propus": { "name": "Propus", "ra": 6.25, "dec": 22.51 },
+      "mekbuda": { "name": "Mekbuda", "ra": 7.07, "dec": 20.57 },
+      "alzirr": { "name": "Alzirr", "ra": 6.75, "dec": 12.90 }
+    },
+    "connections": [
+      ["castor", "mebsuta"],
+      ["mebsuta", "propus"],
+      ["pollux", "wasat"],
+      ["wasat", "mekbuda"],
+      ["mekbuda", "alhena"],
+      ["alhena", "alzirr"],
+      ["wasat", "mebsuta"]
+    ]
   }
 ]
