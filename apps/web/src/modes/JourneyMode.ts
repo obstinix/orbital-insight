@@ -633,11 +633,11 @@ export class JourneyMode {
         const direction = new THREE.Vector3().subVectors(destPos, startPos).normalize();
         
         // Execute manual deep space warp animation
-        // @ts-ignore
+        // @ts-expect-error - private access properties
         const warpMat = this.spacecraft.warpMaterial;
-        // @ts-ignore
+        // @ts-expect-error - private access properties
         const glowMesh = this.spacecraft.engineGlow;
-        // @ts-ignore
+        // @ts-expect-error - private access properties
         const light = this.spacecraft.thrusterLight;
 
         const tl = gsap.timeline({
