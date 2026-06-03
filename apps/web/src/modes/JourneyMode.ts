@@ -623,7 +623,7 @@ export class JourneyMode {
         usePlanetStore.getState().setSelectedPlanetId(null);
         this.spacecraft.detachFromPlanet();
 
-        let destPos = new THREE.Vector3();
+        const destPos = new THREE.Vector3();
         if (chapterId === 7 && this.blackHoleGroup) destPos.copy(this.blackHoleGroup.position).add(new THREE.Vector3(0, 100, 350));
         if (chapterId === 8 && this.cmbHorizonMesh) destPos.copy(this.cmbHorizonMesh.position).add(new THREE.Vector3(0, 0, 600));
 

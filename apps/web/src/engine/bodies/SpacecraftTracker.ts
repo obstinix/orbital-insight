@@ -264,7 +264,7 @@ export class SpacecraftTracker {
     // JWST resides in a halo orbit around L2.
     // Let's create an ellipse in the plane perpendicular to the Sun-Earth line.
     // Find two orthogonal basis vectors perpendicular to sunToEarthVec.
-    let upVec = new THREE.Vector3(0, 1, 0);
+    const upVec = new THREE.Vector3(0, 1, 0);
     if (Math.abs(sunToEarthVec.dot(upVec)) > 0.9) {
       upVec.set(0, 0, 1);
     }
