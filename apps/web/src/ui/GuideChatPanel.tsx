@@ -25,6 +25,77 @@ export const GuideChatPanel: React.FC = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, activeMessageText]);
 
+  // Listen to system-wide NOVA messages (e.g. from Journey Mode)
+  useEffect(() => {
+    const handleNovaMessage = (e: Event) => {
+      const customEvent = e as CustomEvent<{ text: string }>;
+      const newMsg: GuideMessage = {
+        sender: 'nova',
+        text: customEvent.detail.text,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, newMsg]);
+
+      // Play voice TTS if enabled and not muted
+      const { isVoiceEnabled, masterVolume, voiceVolume, isMuted } = useAudioStore.getState();
+      if (isVoiceEnabled && !isMuted) {
+        const speakText = customEvent.detail.text
+          .replace(/\[[^\]]+\]/g, '')
+          .trim();
+
+        if (speakText) {
+          const playVoiceStream = async () => {
+            const API_BASE = import.meta.env.VITE_API_URL || '';
+            try {
+              const voiceRes = await fetch(`${API_BASE}/api/guide/voice`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: speakText }),
+              });
+
+              if (voiceRes.ok) {
+                const audioBlob = await voiceRes.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+
+                const sound = new Howl({
+                  src: [audioUrl],
+                  format: ['mp3'],
+                  html5: true,
+                  volume: masterVolume * voiceVolume,
+                  onend: () => {
+                    URL.revokeObjectURL(audioUrl);
+                    if (activeVoiceRef.current === sound) {
+                      activeVoiceRef.current = null;
+                    }
+                  },
+                  onloaderror: () => {
+                    URL.revokeObjectURL(audioUrl);
+                  }
+                });
+
+                if (activeVoiceRef.current) {
+                  activeVoiceRef.current.unload();
+                }
+                activeVoiceRef.current = sound;
+                sound.play();
+              }
+            } catch (err) {
+              console.error('[Voice] Failed to play ElevenLabs speech:', err);
+            }
+          };
+          playVoiceStream();
+        }
+      }
+    };
+
+    window.addEventListener('novaMessage', handleNovaMessage);
+    return () => {
+      window.removeEventListener('novaMessage', handleNovaMessage);
+    };
+  }, []);
+
   const handleSend = async (messageText: string) => {
     if (!messageText.trim() || isStreaming) return;
 
