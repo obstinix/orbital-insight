@@ -1,3 +1,6 @@
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 import React, { useState, useEffect } from 'react';
 import { useAchievementStore } from '../store/useAchievementStore';
 import { useAccountStore } from '../store/useAccountStore';
@@ -365,7 +368,6 @@ export const AchievementsPanel: React.FC = () => {
 
       {/* Share Badge Modal Overlay */}
       {showShareModal && (
-        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
         <div
           style={{
             position: 'fixed',
@@ -383,7 +385,6 @@ export const AchievementsPanel: React.FC = () => {
           onClick={() => setShowShareModal(false)}
         >
           {/* Card body */}
-          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions */}
           <div
             role="dialog"
             aria-modal="true"
