@@ -2,7 +2,7 @@
   "id": "uranus",
   "name": "Uranus",
   "radius_km": 25362,
-  "mass_kg": 8.681e25,
+  "mass_kg": 8.681e+25,
   "orbital_period_days": 30688.5,
   "rotation_period_hours": -17.2,
   "axial_tilt_deg": 97.77,
@@ -19,12 +19,27 @@
   },
   "atmosphere": {
     "radius_scale": 1.015,
-    "rayleigh": [0.45, 0.8, 0.9],
+    "rayleigh": [
+      0.45,
+      0.8,
+      0.9
+    ],
     "density": 0.85
   },
-  "moons": ["miranda", "ariel", "umbriel", "titania", "oberon"],
+  "moons": [
+    "miranda",
+    "ariel",
+    "umbriel",
+    "titania",
+    "oberon"
+  ],
   "facts": {
     "source": "NASA Solar System Exploration",
-    "url": "https://solarsystem.nasa.gov/planets/uranus/overview/"
+    "url": "https://solarsystem.nasa.gov/planets/uranus/overview/",
+    "fun_facts": [
+      "Uranus rotates on its side, like a rolling ball, with an axial tilt of 98 degrees.",
+      "Uranus was the first planet discovered with a telescope, by William Herschel in 1781.",
+      "Uranus is an ice giant with a blue-green color caused by methane in its atmosphere."
+    ]
   }
 }
