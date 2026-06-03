@@ -87,7 +87,7 @@ const ThreeCanvas: React.FC = () => {
             Cosmic Visualization Suspended
           </h2>
           <p style={{ maxWidth: '550px', fontSize: '0.85rem', color: 'var(--color-muted)', lineHeight: '1.6', marginBottom: '2rem' }}>
-            Your system's graphics context was reclaimed by the browser or operating system. 
+            Your system&apos;s graphics context was reclaimed by the browser or operating system. 
             Telemetry is currently offline. Re-engaging engine sub-systems...
           </p>
           <div style={{
