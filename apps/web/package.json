@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@orbital-insight/shared-types": "*",
+    "@sentry/react": "^10.56.0",
     "@tanstack/react-query": "^5.62.0",
     "framer-motion": "^11.11.17",
     "gsap": "^3.12.5",

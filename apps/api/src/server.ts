@@ -8,9 +8,19 @@ import { Type } from '@sinclair/typebox';
 import { validateEnv, getEnv } from './config/env.js';
 import guideRoutes from './routes/guide.js';
 import missionRoutes from './routes/missions.js';
+import * as Sentry from '@sentry/node';
 
 // Validate environment variables on startup
 const env = validateEnv();
+
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: env.NODE_ENV,
+    tracesSampleRate: 1.0,
+  });
+  console.log('[Sentry] API Node SDK Initialized.');
+}
 
 const fastify = Fastify({
   logger: {
@@ -120,6 +130,9 @@ const bootstrap = async () => {
   // Fallback Error Handler
   fastify.setErrorHandler((error: FastifyError, request, reply) => {
     fastify.log.error(error);
+    if (process.env.SENTRY_DSN) {
+      Sentry.captureException(error);
+    }
     reply.status(error.statusCode || 500).send({
       error: error.name,
       message: error.message,
