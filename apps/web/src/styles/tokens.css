@@ -161,3 +161,36 @@ h1, h2, h3, h4, h5, h6 {
   transition: outline-color var(--duration-fast) var(--ease-warp), box-shadow var(--duration-fast) var(--ease-warp);
 }
 
+/* Landing Hero — Orbital ring rotation */
+@keyframes heroRingSweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Landing Hero — Star shimmer twinkle */
+@keyframes heroStarTwinkle {
+  0% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.6;
+    transform: scale(1.02);
+  }
+}
+
+/* Landing Hero — CTA button pulse glow */
+@keyframes heroCtaPulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(74, 144, 226, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    border-color: rgba(74, 144, 226, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(74, 144, 226, 0.35), 0 0 60px rgba(0, 188, 212, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    border-color: rgba(0, 188, 212, 0.5);
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import * as THREE from 'three';
 import { createRenderer } from './engine/core/Renderer';
@@ -39,6 +39,7 @@ const AchievementsPanel = React.lazy(() =>
 import { AchievementToast } from './ui/AchievementToast';
 import { AudioControls } from './ui/AudioControls';
 import { KeyboardShortcuts } from './ui/KeyboardShortcuts';
+import { LandingHero } from './ui/LandingHero';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useAchievementStore } from './store/useAchievementStore';
 import { useJourneyStore } from './store/useJourneyStore';
@@ -448,6 +449,13 @@ function AppContent() {
   const setSelectedPlanetId = usePlanetStore((state) => state.setSelectedPlanetId);
   const currentChapterId = useJourneyStore((state) => state.currentChapterId);
   const { isShortcutsPanelOpen, setShortcutsPanelOpen } = useKeyboardShortcuts();
+  const [showLandingHero, setShowLandingHero] = useState(
+    () => typeof window !== 'undefined' && localStorage.getItem('orbital_insight_visited') !== 'true'
+  );
+
+  const handleHeroComplete = useCallback(() => {
+    setShowLandingHero(false);
+  }, []);
 
   // Monitor chapter milestones for achievements
   useEffect(() => {
@@ -512,6 +520,9 @@ function AppContent() {
           <Route path="/achievements" element={<AchievementsPanel />} />
         </Routes>
       </React.Suspense>
+
+      {/* Cinematic landing hero — first visit only */}
+      {showLandingHero && <LandingHero onComplete={handleHeroComplete} />}
     </div>
   );
 }
