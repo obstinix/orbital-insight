@@ -33,7 +33,7 @@ export class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       if (this.props.fallback) {
         if (typeof this.props.fallback === 'function') {
-          return (this.props.fallback as any)(this.state.error, this.handleReset);
+          return (this.props.fallback as (error: Error | null, reset: () => void) => ReactNode)(this.state.error, this.handleReset);
         }
         return this.props.fallback;
       }
@@ -100,6 +100,12 @@ export class ErrorBoundary extends Component<Props, State> {
               e.currentTarget.style.background = 'rgba(255, 59, 48, 0.2)';
             }}
             onMouseOut={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 59, 48, 0.1)';
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 59, 48, 0.2)';
+            }}
+            onBlur={(e) => {
               e.currentTarget.style.background = 'rgba(255, 59, 48, 0.1)';
             }}
           >
