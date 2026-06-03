@@ -12,11 +12,13 @@ export interface UserProfile {
 
 interface AccountState {
   profile: UserProfile;
-  addXp: (amount: number, token?: string) => void;
-  updateProfile: (username: string, avatar: string, token?: string) => void;
+  authToken: string | null;
+  addXp: (amount: number) => void;
+  updateProfile: (username: string, avatar: string) => void;
   resetAccount: () => void;
-  fetchProfile: (token?: string) => Promise<void>;
-  saveProfile: (token?: string) => Promise<void>;
+  setAuthToken: (token: string | null) => void;
+  fetchProfile: (token?: string | null) => Promise<void>;
+  saveProfile: (token?: string | null) => Promise<void>;
 }
 
 const getRankFromXp = (xp: number): string => {
@@ -45,7 +47,8 @@ export const useAccountStore = create<AccountState>()(
   persist(
     (set, get) => ({
       profile: DEFAULT_PROFILE,
-      addXp: (amount, token) => {
+      authToken: null,
+      addXp: (amount) => {
         const currentProfile = get().profile;
         const newXp = currentProfile.xp + amount;
         const newLevel = getLevelFromXp(newXp);
@@ -60,11 +63,12 @@ export const useAccountStore = create<AccountState>()(
           },
         });
 
+        const token = get().authToken;
         if (token) {
           get().saveProfile(token);
         }
       },
-      updateProfile: (username, avatar, token) => {
+      updateProfile: (username, avatar) => {
         const currentProfile = get().profile;
         set({
           profile: {
@@ -74,6 +78,7 @@ export const useAccountStore = create<AccountState>()(
           },
         });
 
+        const token = get().authToken;
         if (token) {
           get().saveProfile(token);
         }
@@ -86,13 +91,17 @@ export const useAccountStore = create<AccountState>()(
           },
         });
       },
+      setAuthToken: (token) => {
+        set({ authToken: token });
+      },
       fetchProfile: async (token) => {
-        if (!token) return;
+        const activeToken = token || get().authToken;
+        if (!activeToken) return;
         const API_BASE = import.meta.env.VITE_API_URL || '';
         try {
           const res = await fetch(`${API_BASE}/api/profile`, {
             headers: {
-              'Authorization': `Bearer ${token}`
+              'Authorization': `Bearer ${activeToken}`
             }
           });
           if (res.ok) {
@@ -125,7 +134,8 @@ export const useAccountStore = create<AccountState>()(
         }
       },
       saveProfile: async (token) => {
-        if (!token) return;
+        const activeToken = token || get().authToken;
+        if (!activeToken) return;
         const API_BASE = import.meta.env.VITE_API_URL || '';
         const currentProfile = get().profile;
         try {
@@ -138,7 +148,7 @@ export const useAccountStore = create<AccountState>()(
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
+              'Authorization': `Bearer ${activeToken}`
             },
             body: JSON.stringify({
               username: currentProfile.username,
@@ -156,6 +166,9 @@ export const useAccountStore = create<AccountState>()(
     }),
     {
       name: 'orbital-insight-account',
+      partialize: (state) => ({
+        profile: state.profile,
+      }),
     }
   )
 );
