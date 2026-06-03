@@ -22,6 +22,7 @@ import { useExoplanetStore } from './store/useExoplanetStore';
 import { SpacecraftTracker } from './engine/bodies/SpacecraftTracker';
 import { SpecialEvents } from './engine/bodies/SpecialEvents';
 import { AudioEngine } from './engine/audio/AudioEngine';
+import { ErrorBoundary } from './ui/ErrorBoundary';
 
 // Lazy-loaded route panels for performance optimizations
 const ConstellationPanel = React.lazy(() => 
@@ -53,12 +54,29 @@ const ThreeCanvas: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isInitialized = useEngineStore((state) => state.isInitialized);
+  const [isContextLost, setIsContextLost] = useState(false);
 
   useEffect(() => {
     if (!canvasRef.current || isInitialized) return;
 
     const canvas = canvasRef.current;
     
+    // WebGL Context Loss event handlers
+    const handleContextLost = (e: Event) => {
+      e.preventDefault();
+      console.warn('[WebGL] WebGL context lost.');
+      setIsContextLost(true);
+    };
+
+    const handleContextRestored = () => {
+      console.log('[WebGL] WebGL context restored. Re-initializing engine.');
+      setIsContextLost(false);
+      window.location.reload();
+    };
+
+    canvas.addEventListener('webglcontextlost', handleContextLost, false);
+    canvas.addEventListener('webglcontextrestored', handleContextRestored, false);
+
     // 1. Initialize core systems
     const renderer = createRenderer(canvas);
     const sceneGraph = createSceneGraph();
@@ -224,6 +242,8 @@ const ThreeCanvas: React.FC = () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('exoplanetVisualUpdate', handleExoplanetVisualUpdate);
       window.removeEventListener('orbitalInsightAudioUnlock', handleAudioUnlock);
+      canvas.removeEventListener('webglcontextlost', handleContextLost);
+      canvas.removeEventListener('webglcontextrestored', handleContextRestored);
       loop.stop();
       cameraController.dispose();
       starField.dispose();
@@ -258,6 +278,55 @@ const ThreeCanvas: React.FC = () => {
         ref={canvasRef}
         style={{ width: '100%', height: '100%', display: 'block' }}
       />
+      {isContextLost && (
+        <div
+          role="alert"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'rgba(10, 5, 5, 0.95)',
+            backdropFilter: 'blur(24px)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 99999,
+            color: '#fff',
+            fontFamily: 'var(--font-mono, monospace)',
+            textAlign: 'center',
+            padding: '2rem',
+            animation: 'fadeIn var(--duration-medium) ease'
+          }}
+        >
+          <div style={{ color: '#ff3b30', fontSize: '1rem', letterSpacing: '4px', fontWeight: 'bold', marginBottom: '1.5rem' }}>
+            ⚠️ CRITICAL ERROR: GPU CONTEXT LOSS ⚠️
+          </div>
+          <h2 style={{ fontSize: '2rem', fontFamily: 'var(--font-display, sans-serif)', marginBottom: '1rem' }}>
+            Cosmic Visualization Suspended
+          </h2>
+          <p style={{ maxWidth: '550px', fontSize: '0.85rem', color: 'var(--color-muted)', lineHeight: '1.6', marginBottom: '2rem' }}>
+            Your system's graphics context was reclaimed by the browser or operating system. 
+            Telemetry is currently offline. Re-engaging engine sub-systems...
+          </p>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            border: '2px solid rgba(255, 59, 48, 0.2)',
+            borderTop: '2px solid #ff3b30',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }} />
+          <style>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+        </div>
+      )}
     </div>
   );
 };
@@ -497,14 +566,20 @@ function AppContent() {
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
       {/* Core 3D engine canvas - persists across routes */}
-      <ThreeCanvas />
+      <ErrorBoundary name="3D Engine">
+        <ThreeCanvas />
+      </ErrorBoundary>
 
       {/* Global HUD Layout components */}
       <TopHudStats />
       <LeftNavigationPanel />
-      <InfoPanel />
+      <ErrorBoundary name="Info Panel">
+        <InfoPanel />
+      </ErrorBoundary>
       <TimeControls />
-      <GuideChatPanel />
+      <ErrorBoundary name="Guide Chat Panel">
+        <GuideChatPanel />
+      </ErrorBoundary>
       <AchievementToast />
       <AudioControls />
 
@@ -515,16 +590,18 @@ function AppContent() {
       />
 
       {/* Router-controlled HUD overlays wrapped in dynamic loader */}
-      <React.Suspense fallback={<PanelLoader />}>
-        <Routes>
-          <Route path="/" element={<UniverseView />} />
-          <Route path="/journey" element={<ChapterSelector />} />
-          <Route path="/constellations" element={<ConstellationPanel />} />
-          <Route path="/exoplanets" element={<ExoplanetPanel />} />
-          <Route path="/missions" element={<MissionsPanel />} />
-          <Route path="/achievements" element={<AchievementsPanel />} />
-        </Routes>
-      </React.Suspense>
+      <ErrorBoundary name="HUD Panels">
+        <React.Suspense fallback={<PanelLoader />}>
+          <Routes>
+            <Route path="/" element={<UniverseView />} />
+            <Route path="/journey" element={<ChapterSelector />} />
+            <Route path="/constellations" element={<ConstellationPanel />} />
+            <Route path="/exoplanets" element={<ExoplanetPanel />} />
+            <Route path="/missions" element={<MissionsPanel />} />
+            <Route path="/achievements" element={<AchievementsPanel />} />
+          </Routes>
+        </React.Suspense>
+      </ErrorBoundary>
 
       {/* Cinematic landing hero — first visit only */}
       {showLandingHero && <LandingHero onComplete={handleHeroComplete} />}
