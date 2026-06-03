@@ -12,6 +12,7 @@
     "test": "echo 'No tests yet in Phase 0'"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^5.61.8",
     "@orbital-insight/shared-types": "*",
     "@sentry/react": "^10.56.0",
     "@tanstack/react-query": "^5.62.0",
