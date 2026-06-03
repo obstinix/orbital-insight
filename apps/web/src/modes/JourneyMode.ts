@@ -6,6 +6,8 @@ import { useEngineStore } from '../store/useEngineStore';
 import { usePlanetStore } from '../store/usePlanetStore';
 import blackholeVert from '../shaders/blackhole.vert';
 import blackholeFrag from '../shaders/blackhole.frag';
+import nebulaVert from '../shaders/nebula.vert';
+import nebulaFrag from '../shaders/nebula.frag';
 
 export class JourneyMode {
   private scene: THREE.Scene;
@@ -14,6 +16,8 @@ export class JourneyMode {
 
   // Visual assets representing the deep space milestones
   private oortCloudPoints: THREE.Points | null = null;
+  private nebulaMesh: THREE.Mesh | null = null;
+  private nebulaMaterial: THREE.ShaderMaterial | null = null;
   private alphaCentauriGroup: THREE.Group | null = null;
   private blackHoleGroup: THREE.Group | null = null;
   private blackHoleMaterial: THREE.ShaderMaterial | null = null;
@@ -54,6 +58,25 @@ export class JourneyMode {
     this.oortCloudPoints.position.set(0, 0, -3000);
     this.scene.add(this.oortCloudPoints);
     this.oortCloudPoints.visible = false;
+
+    // 1b. Volumetric Nebula (glowing gas clouds surrounding the Oort sector)
+    this.nebulaMaterial = new THREE.ShaderMaterial({
+      vertexShader: nebulaVert,
+      fragmentShader: nebulaFrag,
+      uniforms: {
+        uTime: { value: 0.0 },
+      },
+      transparent: true,
+      depthWrite: false, // disable depth write to avoid clipping issues with stars
+      side: THREE.DoubleSide,
+      blending: THREE.NormalBlending,
+    });
+
+    const nebulaGeo = new THREE.SphereGeometry(150, 48, 48);
+    this.nebulaMesh = new THREE.Mesh(nebulaGeo, this.nebulaMaterial);
+    this.nebulaMesh.position.set(0, 0, -3000);
+    this.scene.add(this.nebulaMesh);
+    this.nebulaMesh.visible = false;
 
     // 2. Chapter 6: Alpha Centauri (glowing binary stars)
     this.alphaCentauriGroup = new THREE.Group();
@@ -117,6 +140,7 @@ export class JourneyMode {
     */
   private toggleAssetVisibility(chapterId: number): void {
     if (this.oortCloudPoints) this.oortCloudPoints.visible = chapterId === 5;
+    if (this.nebulaMesh) this.nebulaMesh.visible = chapterId === 5;
     if (this.alphaCentauriGroup) this.alphaCentauriGroup.visible = chapterId === 6;
     if (this.blackHoleGroup) this.blackHoleGroup.visible = chapterId === 7;
     if (this.cmbHorizonMesh) this.cmbHorizonMesh.visible = chapterId === 8;
@@ -273,6 +297,10 @@ export class JourneyMode {
   public update(elapsedSeconds: number): void {
     if (this.oortCloudPoints && this.oortCloudPoints.visible) {
       this.oortCloudPoints.rotation.y = elapsedSeconds * 0.02;
+    }
+    if (this.nebulaMesh && this.nebulaMesh.visible && this.nebulaMaterial) {
+      this.nebulaMaterial.uniforms.uTime.value = elapsedSeconds;
+      this.nebulaMesh.rotation.y = elapsedSeconds * 0.012;
     }
     if (this.alphaCentauriGroup && this.alphaCentauriGroup.visible) {
       this.alphaCentauriGroup.rotation.y = elapsedSeconds * 0.1;
