@@ -1,5 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { Type } from '@sinclair/typebox';
+import { Anthropic } from '@anthropic-ai/sdk';
+import { getEnv } from '../config/env.js';
 
 const PLANET_FACTS: Record<string, { overview: string; atmosphere: string; gravity: string; life: string }> = {
   sun: {
@@ -64,12 +66,62 @@ const PLANET_FACTS: Record<string, { overview: string; atmosphere: string; gravi
   }
 };
 
+// Simulated stream helper for key verification failure or local mock fallback
+function runFallbackSimulatedStream(reply: any, request: any, facts: any, message: string, normalizedPlanetId: string) {
+  const msgLower = message.toLowerCase();
+  let responseBody = facts.overview;
+
+  if (msgLower.includes('atmosphere') || msgLower.includes('air') || msgLower.includes('weather') || msgLower.includes('wind')) {
+    responseBody = facts.atmosphere;
+  } else if (msgLower.includes('gravity') || msgLower.includes('mass') || msgLower.includes('heavy') || msgLower.includes('weight')) {
+    responseBody = facts.gravity;
+  } else if (msgLower.includes('life') || msgLower.includes('alien') || msgLower.includes('live') || msgLower.includes('water') || msgLower.includes('inhabit')) {
+    responseBody = facts.life;
+  }
+
+  const greeting = `[NOVA V1.2 TRANSMISSION INITIATED (SIMULATED)]\nOrbiting: ${normalizedPlanetId.toUpperCase()}.\n`;
+  const closing = `\nTelemetry scans completed. Standing by. [NOVA OUT]`;
+
+  const fullResponse = `${greeting}${responseBody}${closing}`;
+  const words = fullResponse.split(' ');
+
+  let index = 0;
+  const interval = setInterval(() => {
+    if (index < words.length) {
+      const chunk = words[index] + ' ';
+      reply.raw.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
+      index++;
+    } else {
+      clearInterval(interval);
+      reply.raw.write('event: end\ndata: [DONE]\n\n');
+      reply.raw.end();
+    }
+  }, 50);
+
+  request.raw.on('close', () => {
+    clearInterval(interval);
+  });
+}
+
+// Authorization middleware placeholder (Phase 1 basic auth check)
+const authPreHandler = async (request: any, reply: any) => {
+  const env = getEnv();
+  // Basic session authentication block (fully expanded in Phase 2 with Clerk integration)
+  if (env.NODE_ENV === 'production') {
+    const authHeader = request.headers.authorization;
+    if (process.env.CLERK_SECRET_KEY && !authHeader) {
+      reply.status(401).send({ error: 'Unauthorized: Session token missing' });
+    }
+  }
+};
+
 export default async function guideRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/guide',
     {
+      preHandler: authPreHandler,
       schema: {
-        description: 'AI Spacecraft Guide chat proxy endpoint',
+        description: 'AI Spacecraft Guide chat streaming endpoint (Anthropic Claude API)',
         body: Type.Object({
           message: Type.String(),
           planetId: Type.String(),
@@ -85,6 +137,7 @@ export default async function guideRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       const { message, planetId } = request.body as { message: string; planetId: string };
       const normalizedPlanetId = planetId.toLowerCase();
+      const env = getEnv();
 
       // Set headers for SSE stream
       reply.raw.writeHead(200, {
@@ -94,44 +147,128 @@ export default async function guideRoutes(fastify: FastifyInstance) {
         'Access-Control-Allow-Origin': '*'
       });
 
-      // Get target planet details or fallback to Earth
       const facts = PLANET_FACTS[normalizedPlanetId] || PLANET_FACTS.earth;
-      
-      // Analyze user input for topics
-      const msgLower = message.toLowerCase();
-      let responseBody = facts.overview;
 
-      if (msgLower.includes('atmosphere') || msgLower.includes('air') || msgLower.includes('weather') || msgLower.includes('wind')) {
-        responseBody = facts.atmosphere;
-      } else if (msgLower.includes('gravity') || msgLower.includes('mass') || msgLower.includes('heavy') || msgLower.includes('weight')) {
-        responseBody = facts.gravity;
-      } else if (msgLower.includes('life') || msgLower.includes('alien') || msgLower.includes('live') || msgLower.includes('water') || msgLower.includes('inhabit')) {
-        responseBody = facts.life;
+      // Construct rich contextual system prompt
+      const systemPrompt = `You are NOVA, a highly advanced holographic spacecraft guide.
+You are currently guiding a user who is exploring the solar system.
+The user is currently looking at or orbiting the planet: ${normalizedPlanetId.toUpperCase()}.
+Here are some scanning parameters and telemetry details for this planet:
+- Overview: ${facts.overview}
+- Atmosphere: ${facts.atmosphere}
+- Gravity: ${facts.gravity}
+- Astrobiological habitability/Life: ${facts.life}
+
+Provide responses in a helpful, knowledgeable, and futuristic spacecraft computer style.
+Cite relevant scientific facts or data where appropriate. Keep your response concise (under 3-4 paragraphs) to fit the space museum HUD.`;
+
+      // Check if Anthropic key is valid
+      if (!env.ANTHROPIC_API_KEY || env.ANTHROPIC_API_KEY === 'mock-key') {
+        request.log.info('No Anthropic API Key configured. Using fallback local guide simulator.');
+        runFallbackSimulatedStream(reply, request, facts, message, normalizedPlanetId);
+        return;
       }
 
-      const greeting = `[NOVA V1.2 TRANSMISSION INITIATED]\nOrbiting: ${normalizedPlanetId.toUpperCase()}.\n`;
-      const closing = `\nTelemetry scans completed. Standing by. [NOVA OUT]`;
+      try {
+        const anthropic = new Anthropic({
+          apiKey: env.ANTHROPIC_API_KEY,
+        });
 
-      const fullResponse = `${greeting}${responseBody}${closing}`;
-      const words = fullResponse.split(' ');
+        const stream = await anthropic.messages.create({
+          model: 'claude-3-5-sonnet-20241022',
+          max_tokens: 512,
+          system: systemPrompt,
+          messages: [
+            {
+              role: 'user',
+              content: message,
+            },
+          ],
+          stream: true,
+        });
 
-      let index = 0;
-      const interval = setInterval(() => {
-        if (index < words.length) {
-          const chunk = words[index] + ' ';
-          reply.raw.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
-          index++;
-        } else {
-          clearInterval(interval);
-          reply.raw.write('event: end\ndata: [DONE]\n\n');
-          reply.raw.end();
+        for await (const chunk of stream) {
+          if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
+            const textChunk = chunk.delta.text;
+            reply.raw.write(`data: ${JSON.stringify({ text: textChunk })}\n\n`);
+          }
         }
-      }, 70); // 70ms per word creates an aesthetic typewriter stream
 
-      // Handle client close
-      request.raw.on('close', () => {
-        clearInterval(interval);
-      });
+        reply.raw.write('event: end\ndata: [DONE]\n\n');
+        reply.raw.end();
+      } catch (err) {
+        request.log.error(err, 'Anthropic Claude stream failed. Falling back to local simulation.');
+        runFallbackSimulatedStream(reply, request, facts, message, normalizedPlanetId);
+      }
+    }
+  );
+
+  fastify.post(
+    '/guide/voice',
+    {
+      preHandler: authPreHandler,
+      schema: {
+        description: 'Convert guide text to speech audio stream (ElevenLabs API)',
+        body: Type.Object({
+          text: Type.String(),
+        }),
+      },
+    },
+    async (request, reply) => {
+      const { text } = request.body as { text: string };
+      const env = getEnv();
+
+      if (!env.ELEVENLABS_API_KEY || env.ELEVENLABS_API_KEY === 'mock-key') {
+        reply.status(400).send({ error: 'ElevenLabs API key is not configured' });
+        return;
+      }
+
+      // Default ElevenLabs voice ID (e.g. Rachel / Curated Voice)
+      const voiceId = '21m00Tcm4TlvDq8ikWAM'; 
+
+      try {
+        const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream`, {
+          method: 'POST',
+          headers: {
+            'xi-api-key': env.ELEVENLABS_API_KEY,
+            'Content-Type': 'application/json',
+            'accept': 'audio/mpeg',
+          },
+          body: JSON.stringify({
+            text,
+            model_id: 'eleven_monolingual_v1',
+            voice_settings: {
+              stability: 0.5,
+              similarity_boost: 0.75,
+            },
+          }),
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`ElevenLabs error: ${response.status} - ${errText}`);
+        }
+
+        if (!response.body) {
+          throw new Error('No audio body stream returned from ElevenLabs');
+        }
+
+        reply.raw.writeHead(200, {
+          'Content-Type': 'audio/mpeg',
+          'Transfer-Encoding': 'chunked',
+        });
+
+        const reader = response.body.getReader();
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          reply.raw.write(value);
+        }
+        reply.raw.end();
+      } catch (err) {
+        request.log.error(err, 'ElevenLabs TTS generation failed');
+        reply.status(500).send({ error: 'Text-to-Speech generation failed' });
+      }
     }
   );
 }

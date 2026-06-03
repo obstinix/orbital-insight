@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { usePlanetStore } from '../store/usePlanetStore';
 import { askAIGuide, GuideMessage } from '../spacecraft/AIGuide';
+import { useAudioStore } from '../store/useAudioStore';
+import { Howl } from 'howler';
 
 export const GuideChatPanel: React.FC = () => {
   const selectedPlanetId = usePlanetStore((state) => state.selectedPlanetId) || 'earth';
@@ -14,7 +16,9 @@ export const GuideChatPanel: React.FC = () => {
   const [inputVal, setInputVal] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [activeMessageText, setActiveMessageText] = useState('');
+  const [voiceEnabled, setVoiceEnabled] = useState(() => useAudioStore.getState().isVoiceEnabled);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const activeVoiceRef = useRef<Howl | null>(null);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -23,6 +27,11 @@ export const GuideChatPanel: React.FC = () => {
 
   const handleSend = async (messageText: string) => {
     if (!messageText.trim() || isStreaming) return;
+
+    if (activeVoiceRef.current) {
+      activeVoiceRef.current.unload();
+      activeVoiceRef.current = null;
+    }
 
     // 1. Add User Message
     const userMsg: GuideMessage = {
@@ -54,6 +63,56 @@ export const GuideChatPanel: React.FC = () => {
         setMessages((prev) => [...prev, aiMsg]);
         setActiveMessageText('');
         setIsStreaming(false);
+
+        // Fetch and play TTS audio if voice is enabled and not globally muted
+        const { isVoiceEnabled, masterVolume, voiceVolume, isMuted } = useAudioStore.getState();
+        if (isVoiceEnabled && !isMuted) {
+          const speakText = currentResponseText
+            .replace(/\[[^\]]+\]/g, '') // strip system status brackets e.g. [NOVA OUT]
+            .trim();
+
+          if (speakText) {
+            const playVoiceStream = async () => {
+              const API_BASE = import.meta.env.VITE_API_URL || '';
+              try {
+                const voiceRes = await fetch(`${API_BASE}/api/guide/voice`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ text: speakText }),
+                });
+
+                if (voiceRes.ok) {
+                  const audioBlob = await voiceRes.blob();
+                  const audioUrl = URL.createObjectURL(audioBlob);
+
+                  const sound = new Howl({
+                    src: [audioUrl],
+                    format: ['mp3'],
+                    html5: true, // required to play object URLs cleanly
+                    volume: masterVolume * voiceVolume,
+                    onend: () => {
+                      URL.revokeObjectURL(audioUrl);
+                      if (activeVoiceRef.current === sound) {
+                        activeVoiceRef.current = null;
+                      }
+                    },
+                    onloaderror: () => {
+                      URL.revokeObjectURL(audioUrl);
+                    }
+                  });
+
+                  activeVoiceRef.current = sound;
+                  sound.play();
+                }
+              } catch (err) {
+                console.error('[Voice] Failed to play ElevenLabs speech:', err);
+              }
+            };
+            playVoiceStream();
+          }
+        }
       },
       (error) => {
         // Error
@@ -162,6 +221,43 @@ export const GuideChatPanel: React.FC = () => {
             {isStreaming ? 'STREAMING LINK...' : 'STANDBY // ORBIT_READY'}
           </span>
         </div>
+
+        {/* Voice Toggle Button */}
+        <button
+          onClick={() => {
+            const currentVoiceEnabled = useAudioStore.getState().isVoiceEnabled;
+            useAudioStore.getState().toggleVoice();
+            setVoiceEnabled(!currentVoiceEnabled);
+            if (currentVoiceEnabled && activeVoiceRef.current) {
+              activeVoiceRef.current.unload();
+              activeVoiceRef.current = null;
+            }
+          }}
+          aria-label={voiceEnabled ? 'Mute voice narration' : 'Unmute voice narration'}
+          style={{
+            marginLeft: 'auto',
+            background: 'transparent',
+            border: 'none',
+            color: voiceEnabled ? 'var(--color-teal-cyan)' : 'var(--color-muted)',
+            cursor: 'pointer',
+            padding: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'color 0.2s',
+          }}
+        >
+          {voiceEnabled ? (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <path d="M12 2v20M17 5v14M22 9v6M7 7v10M2 10v4" strokeLinecap="round" />
+            </svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <path d="M12 2v20M17 5v14M7 7v10M2 10v4" strokeOpacity="0.4" strokeLinecap="round" />
+              <line x1="2" y1="2" x2="22" y2="22" stroke="#ff3b30" />
+            </svg>
+          )}
+        </button>
       </div>
 
       {/* Messages Scroll Area */}
