@@ -10,8 +10,7 @@
   "eccentricity": 0.0067,
   "inclination_deg": 3.39,
   "textures": {
-    "diffuse": "venus_diffuse.basis",
-    "normal": "venus_normal.basis"
+    "diffuse": "venus/venus_atmo_4k.jpg"
   },
   "atmosphere": {
     "radius_scale": 1.03,
