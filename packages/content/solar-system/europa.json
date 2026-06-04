@@ -9,9 +9,7 @@
   "semi_major_axis_au": 0.00448,
   "eccentricity": 0.009,
   "inclination_deg": 0.47,
-  "textures": {
-    "diffuse": "europa_diffuse.basis"
-  },
+  "textures": {},
   "moons": [],
   "facts": {
     "source": "NASA Solar System Exploration",
