@@ -10,8 +10,7 @@
   "eccentricity": 0.0549,
   "inclination_deg": 5.14,
   "textures": {
-    "diffuse": "moon_diffuse.basis",
-    "normal": "moon_normal.basis"
+    "diffuse": "moon/moon_8k.jpg"
   },
   "moons": [],
   "facts": {
