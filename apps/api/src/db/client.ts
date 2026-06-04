@@ -1,5 +1,6 @@
 import pg from 'pg';
 import { getEnv } from '../config/env.js';
+import exoplanetsData from '../../../../packages/content/exoplanets.json';
 
 const { Pool } = pg;
 
@@ -20,8 +21,39 @@ interface MockAchievement {
   unlocked_at: Date;
 }
 
+interface MockExoplanet {
+  id: string;
+  name: string;
+  category: string;
+  type?: string;
+  distance?: number;
+  discovery_year?: number;
+  method?: string;
+  mass?: number;
+  radius?: number;
+  habitability_score?: number;
+  temperature?: number;
+  star?: string;
+  description?: string;
+}
+
 const mockUsers = new Map<string, MockUser>();
 const mockAchievements: MockAchievement[] = [];
+const mockExoplanets: MockExoplanet[] = (exoplanetsData as any[]).map((p) => ({
+  id: p.id,
+  name: p.name,
+  category: p.category,
+  type: p.type,
+  distance: p.distance,
+  discovery_year: p.discoveryYear,
+  method: p.method,
+  mass: p.mass,
+  radius: p.radius,
+  habitability_score: p.habitabilityScore,
+  temperature: p.temperature,
+  star: p.star,
+  description: p.description
+}));
 
 // Seed an initial mock user for testing/demo
 mockUsers.set('dev-token-user123', {
@@ -94,6 +126,25 @@ export async function initializeDatabase(): Promise<void> {
         achievement_id VARCHAR(255) NOT NULL,
         unlocked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (user_id, achievement_id)
+      );
+    `);
+
+    // Create exoplanets table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS exoplanets (
+        id VARCHAR(255) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        category VARCHAR(50) NOT NULL,
+        type VARCHAR(255),
+        distance FLOAT,
+        discovery_year INTEGER,
+        method VARCHAR(100),
+        mass FLOAT,
+        radius FLOAT,
+        habitability_score INTEGER,
+        temperature FLOAT,
+        star VARCHAR(255),
+        description TEXT
       );
     `);
 
@@ -175,6 +226,116 @@ export async function query(text: string, params: unknown[] = []): Promise<pg.Qu
     return {
       rows: [],
       rowCount: exists ? 0 : 1,
+    } as unknown as pg.QueryResult;
+  }
+
+  // 5. Get exoplanets count: select count(*) from exoplanets ...
+  if (sql.includes('select count(*) from exoplanets')) {
+    const search = (params[0] || '').toLowerCase().replace(/%/g, '');
+    const category = params[1] || 'ALL';
+
+    let list = mockExoplanets;
+    if (search) {
+      list = list.filter(p => 
+        p.name.toLowerCase().includes(search) || 
+        (p.star && p.star.toLowerCase().includes(search))
+      );
+    }
+    if (category && category !== 'ALL') {
+      list = list.filter(p => p.category.toLowerCase() === category.toLowerCase());
+    }
+
+    return {
+      rows: [{ count: String(list.length) }],
+      rowCount: 1,
+    } as unknown as pg.QueryResult;
+  }
+
+  // 6. Get exoplanets by ID: select * from exoplanets where id = $1
+  if (sql.includes('select * from exoplanets where id =')) {
+    const id = params[0] as string;
+    const exo = mockExoplanets.find(p => p.id === id);
+    return {
+      rows: exo ? [exo] : [],
+      rowCount: exo ? 1 : 0,
+    } as unknown as pg.QueryResult;
+  }
+
+  // 7. Get exoplanets paginated: select * from exoplanets ...
+  if (sql.includes('select * from exoplanets')) {
+    const search = (params[0] || '').toLowerCase().replace(/%/g, '');
+    const category = params[1] || 'ALL';
+    const limit = typeof params[2] === 'number' ? params[2] : 50;
+    const offset = typeof params[3] === 'number' ? params[3] : 0;
+
+    let list = [...mockExoplanets];
+    if (search) {
+      list = list.filter(p => 
+        p.name.toLowerCase().includes(search) || 
+        (p.star && p.star.toLowerCase().includes(search))
+      );
+    }
+    if (category && category !== 'ALL') {
+      list = list.filter(p => p.category.toLowerCase() === category.toLowerCase());
+    }
+
+    // Sort alphabetically by name
+    list.sort((a, b) => a.name.localeCompare(b.name));
+
+    const paginated = list.slice(offset, offset + limit);
+
+    return {
+      rows: paginated.map(p => ({
+        id: p.id,
+        name: p.name,
+        category: p.category,
+        type: p.type,
+        distance: p.distance,
+        discovery_year: p.discovery_year,
+        method: p.method,
+        mass: p.mass,
+        radius: p.radius,
+        habitability_score: p.habitability_score,
+        temperature: p.temperature,
+        star: p.star,
+        description: p.description
+      })),
+      rowCount: paginated.length,
+    } as unknown as pg.QueryResult;
+  }
+
+  // 8. Insert exoplanets upsert
+  if (sql.includes('insert into exoplanets')) {
+    const [
+      id, name, category, type, distance, discovery_year, method, mass, radius, habitability_score, temperature, star, description
+    ] = params as [string, string, string, string, number, number, string, number, number, number, number, string, string];
+
+    const existingIndex = mockExoplanets.findIndex(p => p.id === id);
+    const updatedExo: MockExoplanet = {
+      id,
+      name,
+      category,
+      type,
+      distance,
+      discovery_year,
+      method,
+      mass,
+      radius,
+      habitability_score,
+      temperature,
+      star,
+      description
+    };
+
+    if (existingIndex !== -1) {
+      mockExoplanets[existingIndex] = updatedExo;
+    } else {
+      mockExoplanets.push(updatedExo);
+    }
+
+    return {
+      rows: [updatedExo],
+      rowCount: 1,
     } as unknown as pg.QueryResult;
   }
 
