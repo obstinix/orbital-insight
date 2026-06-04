@@ -76,7 +76,7 @@ export class Planet {
         fragmentShader: sunFragmentShader,
         uniforms: {
           uTime: { value: 0 },
-          sunTexture: { value: new THREE.Texture() },
+          sunTexture: { value: null },
         },
       });
       this.sunMaterial = sunMat;
@@ -93,10 +93,10 @@ export class Planet {
         vertexShader: earthVertexShader,
         fragmentShader: earthFragmentShader,
         uniforms: {
-          dayTexture: { value: new THREE.Texture() },
-          nightTexture: { value: new THREE.Texture() },
-          normalMap: { value: new THREE.Texture() },
-          specularMap: { value: new THREE.Texture() },
+          dayTexture: { value: null },
+          nightTexture: { value: null },
+          normalMap: { value: null },
+          specularMap: { value: null },
           sunDirection: { value: new THREE.Vector3(1, 0, 0) },
         },
       });
@@ -225,7 +225,7 @@ export class Planet {
           vertexShader: ringsVertexShader,
           fragmentShader: ringsFragmentShader,
           uniforms: {
-            ringTexture: { value: new THREE.Texture() },
+            ringTexture: { value: null },
             sunDirection: { value: new THREE.Vector3(1, 0, 0) },
             innerRadius: { value: innerRad },
             outerRadius: { value: outerRad },
