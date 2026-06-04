@@ -10,8 +10,7 @@
   "eccentricity": 0.0934,
   "inclination_deg": 1.85,
   "textures": {
-    "diffuse": "mars_diffuse.basis",
-    "normal": "mars_normal.basis"
+    "diffuse": "mars/mars_8k.jpg"
   },
   "atmosphere": {
     "radius_scale": 1.015,
