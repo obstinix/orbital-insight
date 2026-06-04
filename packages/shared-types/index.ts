@@ -45,8 +45,8 @@ export interface PlanetConfig {
   semi_major_axis_au: number;
   eccentricity: number;
   inclination_deg: number;
-  textures: {
-    diffuse: string;
+  textures?: {
+    diffuse?: string;
     normal?: string;
     specular?: string;
     night?: string;
