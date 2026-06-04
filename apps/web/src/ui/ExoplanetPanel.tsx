@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useExoplanetStore } from '../store/useExoplanetStore';
 import { useEngineStore } from '../store/useEngineStore';
 import * as THREE from 'three';
@@ -33,7 +33,7 @@ export const ExoplanetPanel: React.FC = () => {
     return () => setShowExoplanetCanvas(false);
   }, [setShowExoplanetCanvas, fetchExoplanets]);
 
-  const handleExoplanetClick = (id: string, cat: string) => {
+  const handleExoplanetClick = useCallback((id: string, cat: string) => {
     setSelectedExoplanetId(id);
 
     if (cat === 'habitable') {
@@ -74,14 +74,14 @@ export const ExoplanetPanel: React.FC = () => {
         });
       }
     }
-  };
+  }, [setSelectedExoplanetId]);
 
   // Auto-select first in list if nothing selected
   useEffect(() => {
     if (!selectedExoplanetId && exoplanets.length > 0) {
       handleExoplanetClick(exoplanets[0].id, exoplanets[0].category);
     }
-  }, [selectedExoplanetId, exoplanets]);
+  }, [selectedExoplanetId, exoplanets, handleExoplanetClick]);
 
   // Debounce/sync local search term
   useEffect(() => {
