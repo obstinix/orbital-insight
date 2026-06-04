@@ -2,34 +2,8 @@ import * as THREE from 'three';
 import starVertexShader from '../shaders/stars.vert';
 import starFragmentShader from '../shaders/stars.frag';
 
-const STAR_COUNT = 100000;
 const SPHERE_RADIUS = 10000;
-
-// Harvard spectral classification color codes
-const SPECTRAL_COLORS = {
-  O: new THREE.Color('#9BB0FF'), // Blue (0.1%)
-  B: new THREE.Color('#AABFFF'), // Blue-White (1.3%)
-  A: new THREE.Color('#CAD7FF'), // White (4.0%)
-  F: new THREE.Color('#F8F7FF'), // Yellow-White (7.6%)
-  G: new THREE.Color('#FFF4EA'), // Yellow (12.1%)
-  K: new THREE.Color('#FFD2A1'), // Orange (12.4%)
-  M: new THREE.Color('#FFCC6F'), // Red (62.5%)
-};
-
-/**
- * Returns a spectral class color based on Harvard classification probability thresholds.
- */
-function getRandomSpectralColor(): THREE.Color {
-  const roll = Math.random() * 100;
-  
-  if (roll < 0.1) return SPECTRAL_COLORS.O;
-  if (roll < 1.4) return SPECTRAL_COLORS.B;
-  if (roll < 5.4) return SPECTRAL_COLORS.A;
-  if (roll < 13.0) return SPECTRAL_COLORS.F;
-  if (roll < 25.1) return SPECTRAL_COLORS.G;
-  if (roll < 37.5) return SPECTRAL_COLORS.K;
-  return SPECTRAL_COLORS.M;
-}
+const FLOATS_PER_STAR = 7;
 
 export class StarField {
   public points: THREE.Points;
@@ -38,38 +12,28 @@ export class StarField {
   constructor() {
     const geometry = new THREE.BufferGeometry();
     
-    const positions = new Float32Array(STAR_COUNT * 3);
-    const colors = new Float32Array(STAR_COUNT * 3);
-    const sizes = new Float32Array(STAR_COUNT);
-    const twinklePhases = new Float32Array(STAR_COUNT);
+    // Start with a small temporary buffer of 1000 procedural stars to show something immediately
+    const tempStarCount = 1000;
+    const positions = new Float32Array(tempStarCount * 3);
+    const colors = new Float32Array(tempStarCount * 3);
+    const sizes = new Float32Array(tempStarCount);
+    const twinklePhases = new Float32Array(tempStarCount);
 
-    for (let i = 0; i < STAR_COUNT; i++) {
-      // 1. Uniform distribution on a sphere
+    for (let i = 0; i < tempStarCount; i++) {
       const u = Math.random();
       const v = Math.random();
       const theta = u * 2.0 * Math.PI;
       const phi = Math.acos(2.0 * v - 1.0);
       
-      const x = SPHERE_RADIUS * Math.sin(phi) * Math.cos(theta);
-      const y = SPHERE_RADIUS * Math.sin(phi) * Math.sin(theta);
-      const z = SPHERE_RADIUS * Math.cos(phi);
+      positions[i * 3] = SPHERE_RADIUS * Math.sin(phi) * Math.cos(theta);
+      positions[i * 3 + 1] = SPHERE_RADIUS * Math.sin(phi) * Math.sin(theta);
+      positions[i * 3 + 2] = SPHERE_RADIUS * Math.cos(phi);
 
-      const i3 = i * 3;
-      positions[i3] = x;
-      positions[i3 + 1] = y;
-      positions[i3 + 2] = z;
+      colors[i * 3] = 1.0;
+      colors[i * 3 + 1] = 1.0;
+      colors[i * 3 + 2] = 1.0;
 
-      // 2. Color assignment based on classification
-      const color = getRandomSpectralColor();
-      colors[i3] = color.r;
-      colors[i3 + 1] = color.g;
-      colors[i3 + 2] = color.b;
-
-      // 3. Size configuration (from small 1.0 to bright 4.5 size)
-      const sizeBase = Math.random();
-      sizes[i] = sizeBase * sizeBase * 3.5 + 1.0; 
-
-      // 4. Random phase offset for twinkling (0 to 2*PI)
+      sizes[i] = 1.0;
       twinklePhases[i] = Math.random() * Math.PI * 2.0;
     }
 
@@ -78,7 +42,6 @@ export class StarField {
     geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
     geometry.setAttribute('twinklePhase', new THREE.BufferAttribute(twinklePhases, 1));
 
-    // Custom shader material supporting twinkling and size attenuation
     this.material = new THREE.ShaderMaterial({
       vertexShader: starVertexShader,
       fragmentShader: starFragmentShader,
@@ -91,12 +54,75 @@ export class StarField {
     });
 
     this.points = new THREE.Points(geometry, this.material);
+
+    // Asynchronously load the real HYG catalog binary buffer
+    this.loadCatalog();
   }
 
-  /**
-   * Updates the shader uniforms. Call this in the animation frame tick.
-   * @param elapsedSeconds Time since simulation start in seconds.
-   */
+  private async loadCatalog(): Promise<void> {
+    try {
+      const response = await fetch('/stars/hyg_stars.bin');
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      const arrayBuffer = await response.arrayBuffer();
+      const starData = new Float32Array(arrayBuffer);
+      const starCount = starData.length / FLOATS_PER_STAR;
+
+      console.log(`[StarField] Loaded ${starCount} stars from HYG catalog binary`);
+
+      const positions = new Float32Array(starCount * 3);
+      const colors = new Float32Array(starCount * 3);
+      const sizes = new Float32Array(starCount);
+      const twinklePhases = new Float32Array(starCount);
+
+      for (let i = 0; i < starCount; i++) {
+        const offset = i * FLOATS_PER_STAR;
+        const raRad = starData[offset + 0]; // ra in radians
+        const decRad = starData[offset + 1]; // dec in radians
+        const mag = starData[offset + 2]; // magnitude
+        const r = starData[offset + 3];
+        const g = starData[offset + 4];
+        const b = starData[offset + 5];
+
+        // Convert RA/Dec to 3D Cartesian coordinates to align with constellations
+        // x = R * cos(decRad) * cos(raRad)
+        // y = R * sin(decRad)
+        // z = R * cos(decRad) * sin(raRad)
+        const cosDec = Math.cos(decRad);
+        positions[i * 3] = SPHERE_RADIUS * cosDec * Math.cos(raRad);
+        positions[i * 3 + 1] = SPHERE_RADIUS * Math.sin(decRad);
+        positions[i * 3 + 2] = SPHERE_RADIUS * cosDec * Math.sin(raRad);
+
+        colors[i * 3] = r;
+        colors[i * 3 + 1] = g;
+        colors[i * 3 + 2] = b;
+
+        // Size logic: map magnitude to visual size
+        sizes[i] = Math.max(0.6, (8.0 - mag) * 0.75);
+
+        twinklePhases[i] = Math.random() * Math.PI * 2.0;
+      }
+
+      const geom = this.points.geometry;
+      geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      geom.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+      geom.setAttribute('twinklePhase', new THREE.BufferAttribute(twinklePhases, 1));
+
+      // Signal Three.js that attributes changed
+      geom.attributes.position.needsUpdate = true;
+      geom.attributes.color.needsUpdate = true;
+      geom.attributes.size.needsUpdate = true;
+      geom.attributes.twinklePhase.needsUpdate = true;
+
+      // Update bounding sphere/box
+      geom.computeBoundingBox();
+      geom.computeBoundingSphere();
+    } catch (error) {
+      console.error('[StarField] Failed to load star catalog:', error);
+    }
+  }
+
   public update(elapsedSeconds: number): void {
     this.material.uniforms.uTime.value = elapsedSeconds;
   }
