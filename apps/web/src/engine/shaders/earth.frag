@@ -8,6 +8,7 @@ uniform sampler2D specularMap;
 
 // Lighting
 uniform vec3 sunDirection;   // Normalized direction toward sun in world space
+uniform vec3 cameraPosition;
 
 varying vec2 vUv;
 varying vec3 vNormal;
