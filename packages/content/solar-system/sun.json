@@ -10,8 +10,7 @@
   "eccentricity": 0,
   "inclination_deg": 0,
   "textures": {
-    "diffuse": "sun_diffuse.basis",
-    "emissive": "sun_emissive.basis"
+    "diffuse": "sun/sun_8k.jpg"
   },
   "moons": [],
   "facts": {
