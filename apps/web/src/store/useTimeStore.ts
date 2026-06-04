@@ -14,7 +14,7 @@ interface TimeState {
 }
 
 export const useTimeStore = create<TimeState>((set, get) => ({
-  simulatedDate: new Date('2026-01-01T12:00:00Z'),
+  simulatedDate: new Date(),
   speedMultiplier: 1,
   isPaused: false,
   setSimulatedDate: (date) => set({ simulatedDate: date }),
