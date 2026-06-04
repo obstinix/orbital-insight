@@ -57,7 +57,7 @@ export interface PlanetConfig {
   ring?: {
     inner_radius_scale: number;
     outer_radius_scale: number;
-    texture: string;
+    texture?: string;
   };
   moons: string[];
   facts: PlanetFacts;
