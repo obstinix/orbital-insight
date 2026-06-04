@@ -70,9 +70,9 @@ export function createComposer(
   const height = renderer.domElement.clientHeight;
   const bloomPass = new UnrealBloomPass(
     new THREE.Vector2(width, height),
-    0.5,   // bloom strength
-    0.35,  // bloom radius
-    0.85   // bloom threshold (only very bright elements glow)
+    0.85,  // bloom strength
+    0.65,  // bloom radius
+    0.55   // bloom threshold (lower threshold makes stars/corona bloom naturally)
   );
   composer.addPass(bloomPass);
 
