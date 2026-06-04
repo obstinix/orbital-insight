@@ -2,6 +2,29 @@ import { FastifyInstance } from 'fastify';
 import { Type } from '@sinclair/typebox';
 import { query } from '../db/client.js';
 
+interface ExoplanetQuery {
+  search?: string;
+  category?: string;
+  limit?: string;
+  offset?: string;
+}
+
+interface ExoplanetDbRow {
+  id: string;
+  name: string;
+  category: string;
+  type?: string;
+  distance?: number;
+  discovery_year?: number;
+  method?: string;
+  mass?: number;
+  radius?: number;
+  habitability_score?: number;
+  temperature?: number;
+  star?: string;
+  description?: string;
+}
+
 export default async function exoplanetRoutes(fastify: FastifyInstance): Promise<void> {
   // GET /api/exoplanets - Returns paginated, searchable list of exoplanets
   fastify.get(
@@ -44,10 +67,11 @@ export default async function exoplanetRoutes(fastify: FastifyInstance): Promise
       },
     },
     async (request, reply) => {
-      const search = (request.query as any).search || '';
-      const category = (request.query as any).category || 'ALL';
-      const limit = parseInt((request.query as any).limit || '50', 10);
-      const offset = parseInt((request.query as any).offset || '0', 10);
+      const queryParams = request.query as ExoplanetQuery;
+      const search = queryParams.search || '';
+      const category = queryParams.category || 'ALL';
+      const limit = parseInt(queryParams.limit || '50', 10);
+      const offset = parseInt(queryParams.offset || '0', 10);
 
       try {
         // 1. Get total count matching criteria
@@ -55,7 +79,7 @@ export default async function exoplanetRoutes(fastify: FastifyInstance): Promise
           'SELECT COUNT(*) FROM exoplanets WHERE (name ILIKE $1 OR star ILIKE $1) AND ($2 = \'ALL\' OR category = $2)',
           [`%${search}%`, category]
         );
-        const total = parseInt(countRes.rows[0]?.count || '0', 10);
+        const total = parseInt((countRes.rows[0] as { count?: string })?.count || '0', 10);
 
         // 2. Fetch paginated records ordered by name
         const selectRes = await query(
@@ -64,7 +88,7 @@ export default async function exoplanetRoutes(fastify: FastifyInstance): Promise
         );
 
         // 3. Map database columns to frontend camelCase keys
-        const exoplanets = selectRes.rows.map((row: any) => ({
+        const exoplanets = selectRes.rows.map((row: ExoplanetDbRow) => ({
           id: row.id,
           name: row.name,
           category: row.category,
@@ -138,7 +162,7 @@ export default async function exoplanetRoutes(fastify: FastifyInstance): Promise
           return;
         }
 
-        const row = selectRes.rows[0];
+        const row = selectRes.rows[0] as ExoplanetDbRow;
         return {
           id: row.id,
           name: row.name,
