@@ -117,11 +117,11 @@ export class SolarSystem {
       positions[i3 + 1] = y;
       positions[i3 + 2] = z;
 
-      // Golden solar gradient colors
+      // Golden solar gradient colors (HDR enabled for bloom interaction)
       const t = Math.random();
-      const r = 1.0;
-      const g = 0.5 + t * 0.35; // ranges between orange and golden yellow
-      const b = 0.05;
+      const r = 3.0;
+      const g = (0.5 + t * 0.35) * 3.0; // ranges between orange and golden yellow
+      const b = 0.05 * 3.0;
 
       colors[i3] = r;
       colors[i3 + 1] = g;
