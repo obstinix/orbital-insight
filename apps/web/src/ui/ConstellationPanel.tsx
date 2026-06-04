@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useConstellationStore } from '../store/useConstellationStore';
 import { useAchievementStore } from '../store/useAchievementStore';
 import { useEngineStore } from '../store/useEngineStore';
-import constellationsData from '../../../../packages/content/constellations.json';
 import { ConstellationLines } from '../engine/bodies/ConstellationLines';
 import gsap from 'gsap';
 import * as THREE from 'three';
@@ -16,6 +15,7 @@ export const ConstellationPanel: React.FC = () => {
     setUserLocation,
     setShowConstellations,
     setSelectedId,
+    constellationsList,
   } = useConstellationStore();
 
   const [siderealTime, setSiderealTime] = useState('');
@@ -68,40 +68,35 @@ export const ConstellationPanel: React.FC = () => {
     setSelectedId(id);
     setShowConstellations(true);
 
-    const rawConst = constellationsData.find((c) => c.id === id);
+    const rawConst = constellationsList.find((c) => c.id === id);
     if (!rawConst) return;
 
-    const firstStarKey = Object.keys(rawConst.stars)[0];
-    const firstStar = rawConst.stars[firstStarKey as keyof typeof rawConst.stars] as { ra: number; dec: number };
-    
-    if (firstStar) {
-      const starPos = ConstellationLines.getCoordinates3D(firstStar.ra, firstStar.dec);
-      const engine = useEngineStore.getState();
+    const starPos = ConstellationLines.getCoordinates3D(rawConst.ra, rawConst.dec);
+    const engine = useEngineStore.getState();
 
-      if (engine.camera && engine.cameraController) {
-        // Switch camera to FREE_ROAM
-        engine.cameraController.setMode('FREE_ROAM');
-        engine.cameraController.setOrbitTarget(new THREE.Vector3(0, 0, 0));
+    if (engine.camera && engine.cameraController) {
+      // Switch camera to FREE_ROAM
+      engine.cameraController.setMode('FREE_ROAM');
+      engine.cameraController.setOrbitTarget(new THREE.Vector3(0, 0, 0));
 
-        // Position camera looking outwards along the direction vector to the constellation
-        const direction = starPos.clone().normalize();
-        const targetCamPos = direction.clone().multiplyScalar(-300); // 300 units from origin
+      // Position camera looking outwards along the direction vector to the constellation
+      const direction = starPos.clone().normalize();
+      const targetCamPos = direction.clone().multiplyScalar(-300); // 300 units from origin
 
-        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-        gsap.to(engine.camera.position, {
-          x: targetCamPos.x,
-          y: targetCamPos.y,
-          z: targetCamPos.z,
-          duration: prefersReducedMotion ? 0 : 2.2,
-          ease: 'power3.inOut',
-          onUpdate: () => {
-            if (engine.camera) {
-              engine.camera.lookAt(starPos);
-            }
-          },
-        });
-      }
+      gsap.to(engine.camera.position, {
+        x: targetCamPos.x,
+        y: targetCamPos.y,
+        z: targetCamPos.z,
+        duration: prefersReducedMotion ? 0 : 2.2,
+        ease: 'power3.inOut',
+        onUpdate: () => {
+          if (engine.camera) {
+            engine.camera.lookAt(starPos);
+          }
+        },
+      });
     }
   };
 
@@ -253,7 +248,7 @@ export const ConstellationPanel: React.FC = () => {
         </span>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          {constellationsData.map((c) => {
+          {constellationsList.map((c) => {
             const isSelected = c.id === selectedId;
             return (
               <div
