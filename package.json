@@ -12,7 +12,11 @@
     "build": "turbo build",
     "test": "turbo test",
     "lint": "turbo lint",
-    "typecheck": "turbo typecheck"
+    "typecheck": "turbo typecheck",
+    "assets:download": "node packages/asset-pipeline/download-textures.mjs",
+    "assets:stars": "node packages/asset-pipeline/process-stars.mjs",
+    "assets:constellations": "node packages/asset-pipeline/download-constellations.mjs",
+    "assets:all": "npm run assets:download && npm run assets:stars && npm run assets:constellations"
   },
   "devDependencies": {
     "turbo": "^2.0.4"
