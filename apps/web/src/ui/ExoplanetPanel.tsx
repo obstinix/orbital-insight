@@ -1,36 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { useExoplanetStore } from '../store/useExoplanetStore';
 import { useEngineStore } from '../store/useEngineStore';
-import exoplanetsData from '../../../../packages/content/exoplanets.json';
 import * as THREE from 'three';
 import gsap from 'gsap';
 import { useAchievementStore } from '../store/useAchievementStore';
-
 
 export const ExoplanetPanel: React.FC = () => {
   const {
     selectedExoplanetId,
     setSelectedExoplanetId,
     setShowExoplanetCanvas,
+    exoplanets,
+    totalCount,
+    loading,
+    searchTerm,
+    category,
+    page,
+    limit,
+    setSearch,
+    setCategory,
+    setPage,
+    fetchExoplanets,
+    activeExoplanet,
   } = useExoplanetStore();
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [activeCategory, setActiveCategory] = useState<string>('ALL');
-  
+  const [localSearch, setLocalSearch] = useState(searchTerm);
+
   // Set showExoplanetCanvas on mount/unmount
   useEffect(() => {
     setShowExoplanetCanvas(true);
+    fetchExoplanets();
     return () => setShowExoplanetCanvas(false);
-  }, [setShowExoplanetCanvas]);
+  }, [setShowExoplanetCanvas, fetchExoplanets]);
 
-  const activeExoplanet = exoplanetsData.find((p) => p.id === selectedExoplanetId) || null;
-
-  const handleExoplanetClick = (id: string, category: string) => {
+  const handleExoplanetClick = (id: string, cat: string) => {
     setSelectedExoplanetId(id);
 
-    if (category === 'habitable') {
+    if (cat === 'habitable') {
       useAchievementStore.getState().unlock('exoplanet_habitable');
-    } else if (category === 'lava') {
+    } else if (cat === 'lava') {
       useAchievementStore.getState().unlock('exoplanet_lava');
     }
 
@@ -39,11 +47,9 @@ export const ExoplanetPanel: React.FC = () => {
 
     if (mesh) {
       // Set the procedural category in 3D renderer
-      // We stored the renderer in the store
-      // Let's retrieve it from engine state or set it via a custom event
       window.dispatchEvent(
         new CustomEvent('exoplanetVisualUpdate', {
-          detail: { category },
+          detail: { category: cat },
         })
       );
 
@@ -70,19 +76,25 @@ export const ExoplanetPanel: React.FC = () => {
     }
   };
 
-  // Filter exoplanets
-  const filteredExoplanets = exoplanetsData.filter((p) => {
-    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCat = activeCategory === 'ALL' || p.category.toUpperCase() === activeCategory;
-    return matchesSearch && matchesCat;
-  });
-
-  // Auto-select first in filtered list if nothing selected
+  // Auto-select first in list if nothing selected
   useEffect(() => {
-    if (!selectedExoplanetId && filteredExoplanets.length > 0) {
-      handleExoplanetClick(filteredExoplanets[0].id, filteredExoplanets[0].category);
+    if (!selectedExoplanetId && exoplanets.length > 0) {
+      handleExoplanetClick(exoplanets[0].id, exoplanets[0].category);
     }
-  }, [selectedExoplanetId, filteredExoplanets]);
+  }, [selectedExoplanetId, exoplanets]);
+
+  // Debounce/sync local search term
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (localSearch !== searchTerm) {
+        setSearch(localSearch);
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [localSearch, searchTerm, setSearch]);
+
+  const totalPages = Math.ceil(totalCount / limit);
 
   return (
     <div
@@ -192,14 +204,14 @@ export const ExoplanetPanel: React.FC = () => {
             marginBottom: '4px',
           }}
         >
-          EXPLORE CONFIRMED CATALOG
+          EXPLORE CONFIRMED CATALOG ({totalCount})
         </span>
 
         {/* Search */}
         <input
           type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          value={localSearch}
+          onChange={(e) => setLocalSearch(e.target.value)}
           placeholder="Search exoplanets..."
           aria-label="Search exoplanets catalog"
           style={{
@@ -222,19 +234,19 @@ export const ExoplanetPanel: React.FC = () => {
           {['ALL', 'HABITABLE', 'OCEAN', 'LAVA', 'ICE'].map((cat) => (
             <button
               key={cat}
-              onClick={() => setActiveCategory(cat)}
-              aria-pressed={activeCategory === cat}
+              onClick={() => setCategory(cat)}
+              aria-pressed={category === cat}
               aria-label={`Filter catalog by ${cat.toLowerCase()} planets`}
               style={{
-                background: activeCategory === cat ? 'var(--color-teal-cyan)' : 'transparent',
+                background: category === cat ? 'var(--color-teal-cyan)' : 'transparent',
                 border: 'none',
-                color: activeCategory === cat ? 'var(--color-void)' : 'var(--color-muted)',
+                color: category === cat ? 'var(--color-void)' : 'var(--color-muted)',
                 padding: '0.2rem 0.4rem',
                 borderRadius: '2px',
                 cursor: 'pointer',
                 fontSize: '0.6rem',
                 fontFamily: 'var(--font-mono)',
-                fontWeight: activeCategory === cat ? 'bold' : 'normal',
+                fontWeight: category === cat ? 'bold' : 'normal',
                 whiteSpace: 'nowrap',
               }}
             >
@@ -246,52 +258,112 @@ export const ExoplanetPanel: React.FC = () => {
         {/* Planet List buttons */}
         <div 
           aria-label="Exoplanet matches"
-          style={{ display: 'flex', flexDirection: 'column', gap: '4px', overflowY: 'auto', maxHeight: '180px' }}
+          style={{ display: 'flex', flexDirection: 'column', gap: '4px', overflowY: 'auto', maxHeight: '180px', flex: 1 }}
         >
-          {filteredExoplanets.map((p) => {
-            const isSelected = p.id === selectedExoplanetId;
-            return (
-              <button
-                key={p.id}
-                onClick={() => handleExoplanetClick(p.id, p.category)}
-                aria-pressed={isSelected}
-                aria-label={`Select exoplanet ${p.name}, type is ${p.type}, category is ${p.category}`}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  background: isSelected ? 'rgba(0, 240, 255, 0.1)' : 'rgba(5, 8, 16, 0.3)',
-                  border: isSelected ? '1px solid rgba(0, 240, 255, 0.4)' : '1px solid rgba(74, 144, 226, 0.12)',
-                  padding: '0.4rem 0.6rem',
-                  borderRadius: '3px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  transition: 'all 0.15s ease',
-                  outline: 'none',
-                }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.75rem', color: isSelected ? '#fff' : 'var(--color-starlight)', fontWeight: isSelected ? 'bold' : 'normal' }}>
-                    {p.name}
-                  </span>
-                  <span style={{ fontSize: '0.55rem', color: 'var(--color-muted)', fontFamily: 'var(--font-mono)' }}>
-                    {p.type}
-                  </span>
-                </div>
-                <span
+          {exoplanets.length === 0 ? (
+            <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--color-muted)', fontSize: '0.75rem', fontFamily: 'var(--font-mono)' }}>
+              {loading ? 'SCANNING DEEP SPACE...' : 'NO PLANETS FOUND'}
+            </div>
+          ) : (
+            exoplanets.map((p) => {
+              const isSelected = p.id === selectedExoplanetId;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => handleExoplanetClick(p.id, p.category)}
+                  aria-pressed={isSelected}
+                  aria-label={`Select exoplanet ${p.name}, type is ${p.type}, category is ${p.category}`}
                   style={{
-                    fontSize: '0.6rem',
-                    color: p.category === 'habitable' ? '#00f0ff' : p.category === 'ocean' ? '#4a90e2' : p.category === 'lava' ? '#ff3333' : '#a6e3e9',
-                    fontFamily: 'var(--font-mono)',
+                    width: '100%',
+                    textAlign: 'left',
+                    background: isSelected ? 'rgba(0, 240, 255, 0.1)' : 'rgba(5, 8, 16, 0.3)',
+                    border: isSelected ? '1px solid rgba(0, 240, 255, 0.4)' : '1px solid rgba(74, 144, 226, 0.12)',
+                    padding: '0.4rem 0.6rem',
+                    borderRadius: '3px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    transition: 'all 0.15s ease',
+                    outline: 'none',
                   }}
                 >
-                  {p.category.toUpperCase()}
-                </span>
-              </button>
-            );
-          })}
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontSize: '0.75rem', color: isSelected ? '#fff' : 'var(--color-starlight)', fontWeight: isSelected ? 'bold' : 'normal' }}>
+                      {p.name}
+                    </span>
+                    <span style={{ fontSize: '0.55rem', color: 'var(--color-muted)', fontFamily: 'var(--font-mono)' }}>
+                      {p.type}
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: '0.6rem',
+                      color: p.category === 'habitable' ? '#00f0ff' : p.category === 'ocean' ? '#4a90e2' : p.category === 'lava' ? '#ff3333' : '#a6e3e9',
+                      fontFamily: 'var(--font-mono)',
+                    }}
+                  >
+                    {p.category.toUpperCase()}
+                  </span>
+                </button>
+              );
+            })
+          )}
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginTop: '4px',
+              paddingTop: '8px',
+              borderTop: '1px solid rgba(74, 144, 226, 0.12)',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.65rem',
+            }}
+          >
+            <button
+              onClick={() => setPage(Math.max(1, page - 1))}
+              disabled={page === 1}
+              style={{
+                background: 'rgba(5, 8, 16, 0.6)',
+                border: '1px solid rgba(0, 240, 255, 0.2)',
+                color: page === 1 ? 'var(--color-muted)' : '#fff',
+                padding: '0.2rem 0.5rem',
+                borderRadius: '3px',
+                cursor: page === 1 ? 'not-allowed' : 'pointer',
+                opacity: page === 1 ? 0.5 : 1,
+                fontSize: '0.6rem',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              PREV
+            </button>
+            <span style={{ color: 'var(--color-starlight)' }}>
+              PAGE {page} OF {totalPages}
+            </span>
+            <button
+              onClick={() => setPage(Math.min(totalPages, page + 1))}
+              disabled={page >= totalPages}
+              style={{
+                background: 'rgba(5, 8, 16, 0.6)',
+                border: '1px solid rgba(0, 240, 255, 0.2)',
+                color: page >= totalPages ? 'var(--color-muted)' : '#fff',
+                padding: '0.2rem 0.5rem',
+                borderRadius: '3px',
+                cursor: page >= totalPages ? 'not-allowed' : 'pointer',
+                opacity: page >= totalPages ? 0.5 : 1,
+                fontSize: '0.6rem',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              NEXT
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
