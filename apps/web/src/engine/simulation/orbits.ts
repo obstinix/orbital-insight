@@ -80,7 +80,7 @@ export function getPlanetOrbitPosition(config: PlanetConfig, date: Date): THREE.
   if (config.id in BODY_MAP) {
     const time = MakeTime(date);
     if (config.id === 'moon') {
-      const moonGeo = GeoVector(Body.Moon, time);
+      const moonGeo = GeoVector(Body.Moon, time, true);
       const dir = new THREE.Vector3(moonGeo.x, moonGeo.y, moonGeo.z).normalize();
       const aVisual = getOrbitSemiMajorAxis(config.id, config.semi_major_axis_au);
       return dir.multiplyScalar(aVisual);
