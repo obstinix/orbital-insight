@@ -10,12 +10,12 @@
   "eccentricity": 0.0565,
   "inclination_deg": 2.49,
   "textures": {
-    "diffuse": "saturn_diffuse.basis"
+    "diffuse": "saturn/saturn_8k.jpg"
   },
   "ring": {
     "inner_radius_scale": 1.2,
     "outer_radius_scale": 2.3,
-    "texture": "saturn_ring.basis"
+    "texture": "saturn/saturn_ring_alpha.png"
   },
   "atmosphere": {
     "radius_scale": 1.015,
