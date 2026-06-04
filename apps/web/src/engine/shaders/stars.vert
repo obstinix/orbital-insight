@@ -21,6 +21,6 @@ void main() {
   vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
   gl_Position = projectionMatrix * mvPosition;
 
-  // Capped point size attenuation based on depth
-  gl_PointSize = size * (200.0 / -mvPosition.z);
+  // Background stars are at a fixed celestial distance; keep point sizes constant
+  gl_PointSize = size * 1.5;
 }

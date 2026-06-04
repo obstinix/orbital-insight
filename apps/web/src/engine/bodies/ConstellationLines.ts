@@ -124,7 +124,7 @@ export class ConstellationLines {
               
               // Slow pulsing halo
               vGlow = sin(uTime * 2.5 + position.x) * 0.35 + 0.65;
-              gl_PointSize = 22.0 * (150.0 / -mvPos.z) * vGlow;
+              gl_PointSize = 12.0 * vGlow;
             }
           `,
           fragmentShader: `

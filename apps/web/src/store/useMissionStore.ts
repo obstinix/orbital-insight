@@ -34,10 +34,10 @@ interface MissionState {
   launches: Launch[];
   historicalMissions: HistoricalMission[];
   selectedMissionId: string | null;
-  activeSpacecraft: 'ISS' | 'JWST';
+  activeSpacecraft: 'ISS' | 'JWST' | 'HUBBLE';
   setIssTelemetry: (telemetry: Telemetry) => void;
   setSelectedMissionId: (id: string | null) => void;
-  setActiveSpacecraft: (spacecraft: 'ISS' | 'JWST') => void;
+  setActiveSpacecraft: (spacecraft: 'ISS' | 'JWST' | 'HUBBLE') => void;
 }
 
 export const useMissionStore = create<MissionState>((set) => ({

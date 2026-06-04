@@ -20,6 +20,8 @@ import { SpecialEvents } from '../engine/bodies/SpecialEvents';
 import { AudioEngine } from '../engine/audio/AudioEngine';
 import { useEngineStore } from '../store/useEngineStore';
 import { SkyMapMode } from '../engine/modes/SkyMapMode';
+import { detectGpuTier } from './gpuTier';
+import { usePerformanceStore } from '../store/usePerformanceStore';
 
 export function useEngineInit(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
   const isInitialized = useEngineStore((state) => state.isInitialized);
@@ -48,6 +50,15 @@ export function useEngineInit(canvasRef: React.RefObject<HTMLCanvasElement | nul
 
     // 1. Initialize core systems
     const renderer = createRenderer(canvas);
+
+    // Detect GPU hardware performance tier and optimize workload
+    const gpuInfo = detectGpuTier();
+    console.log(`[WebGL] GPU Renderer: ${gpuInfo.renderer}, Vendor: ${gpuInfo.vendor}, Tier: ${gpuInfo.tier}`);
+    if (gpuInfo.tier === 'LOW') {
+      usePerformanceStore.getState().setLowPerformance(true);
+      renderer.setPixelRatio(1.0);
+    }
+
     initAssetManager(renderer);
     const sceneGraph = createSceneGraph();
 

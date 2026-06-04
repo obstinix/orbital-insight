@@ -20,6 +20,12 @@ export const ConstellationPanel: React.FC = () => {
 
   const [siderealTime, setSiderealTime] = useState('');
   const [geoStatus, setGeoStatus] = useState<'IDLE' | 'LOCATING' | 'SUCCESS' | 'ERROR'>('IDLE');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Enable showConstellations by default on mount
+  useEffect(() => {
+    setShowConstellations(true);
+  }, [setShowConstellations]);
 
   // Sidereal Time Calculation loop
   useEffect(() => {
@@ -247,8 +253,33 @@ export const ConstellationPanel: React.FC = () => {
           IAU REGISTERED FIGURES
         </span>
 
+        {/* Search Input */}
+        <input
+          type="text"
+          placeholder="SEARCH CONSTELLATIONS..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{
+            background: 'rgba(5, 8, 16, 0.5)',
+            border: '1px solid rgba(74, 144, 226, 0.25)',
+            borderRadius: '4px',
+            color: '#fff',
+            padding: '0.4rem 0.6rem',
+            fontSize: '0.75rem',
+            fontFamily: 'var(--font-mono)',
+            outline: 'none',
+            transition: 'all 0.15s ease',
+            marginBottom: '8px',
+          }}
+        />
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          {constellationsList.map((c) => {
+          {constellationsList
+            .filter((c) =>
+              c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              c.abbreviation.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+            .map((c) => {
             const isSelected = c.id === selectedId;
             return (
               <div

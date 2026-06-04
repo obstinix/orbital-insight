@@ -49,7 +49,8 @@ export function createSceneGraph(): SceneGraph {
   scene.add(ambientLight);
 
   // Primary light source - The Sun
-  const sunLight = new THREE.PointLight(0xFFF4EA, 3.5, 2000);
+  const sunLight = new THREE.PointLight(0xFFF4EA, 3.5, 0);
+  sunLight.decay = 0;
   sunLight.position.set(0, 0, 0);
   sunLight.castShadow = true;
   sunLight.layers.enableAll();

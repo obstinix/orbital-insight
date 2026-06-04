@@ -1,8 +1,8 @@
 import React from 'react';
 
 interface TelemetryTabProps {
-  activeSpacecraft: 'ISS' | 'JWST';
-  setActiveSpacecraft: (craft: 'ISS' | 'JWST') => void;
+  activeSpacecraft: 'ISS' | 'JWST' | 'HUBBLE';
+  setActiveSpacecraft: (craft: 'ISS' | 'JWST' | 'HUBBLE') => void;
   issTelemetry: {
     latitude: number;
     longitude: number;
@@ -56,7 +56,24 @@ export const TelemetryTab: React.FC<TelemetryTabProps> = ({
             fontFamily: 'var(--font-display)',
           }}
         >
-          ISS (IN EQUATORIAL)
+          ISS
+        </button>
+        <button
+          onClick={() => setActiveSpacecraft('HUBBLE')}
+          aria-pressed={activeSpacecraft === 'HUBBLE'}
+          style={{
+            flex: 1,
+            background: activeSpacecraft === 'HUBBLE' ? 'rgba(155, 89, 182, 0.1)' : 'rgba(5, 8, 16, 0.4)',
+            border: activeSpacecraft === 'HUBBLE' ? '1px solid #9b59b6' : '1px solid rgba(74, 144, 226, 0.15)',
+            color: activeSpacecraft === 'HUBBLE' ? '#9b59b6' : 'var(--color-muted)',
+            padding: '0.4rem',
+            borderRadius: '4px',
+            fontSize: '0.75rem',
+            cursor: 'pointer',
+            fontFamily: 'var(--font-display)',
+          }}
+        >
+          HUBBLE
         </button>
         <button
           onClick={() => setActiveSpacecraft('JWST')}
@@ -73,12 +90,12 @@ export const TelemetryTab: React.FC<TelemetryTabProps> = ({
             fontFamily: 'var(--font-display)',
           }}
         >
-          JWST (HALO L2)
+          JWST
         </button>
       </div>
 
       {/* Telemetry Display */}
-      {activeSpacecraft === 'ISS' ? (
+      {activeSpacecraft === 'ISS' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <div
             style={{
@@ -117,7 +134,48 @@ export const TelemetryTab: React.FC<TelemetryTabProps> = ({
             LOCK CAMERA ON ISS
           </button>
         </div>
-      ) : (
+      )}
+
+      {activeSpacecraft === 'HUBBLE' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.6rem',
+              color: '#9b59b6',
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+            }}
+          >
+            🔭 SPACE TELESCOPE TARGET RESOLVED
+          </div>
+          <div style={telemetryRow}>
+            <span style={telemetryLabel}>LATITUDE:</span>
+            <span style={telemetryVal}>{issTelemetry.latitude.toFixed(5)}°</span>
+          </div>
+          <div style={telemetryRow}>
+            <span style={telemetryLabel}>LONGITUDE:</span>
+            <span style={telemetryVal}>{issTelemetry.longitude.toFixed(5)}°</span>
+          </div>
+          <div style={telemetryRow}>
+            <span style={telemetryLabel}>ALTITUDE:</span>
+            <span style={telemetryVal}>540.0 km</span>
+          </div>
+          <div style={telemetryRow}>
+            <span style={telemetryLabel}>ORBIT SPEED:</span>
+            <span style={telemetryVal}>27,300 km/h</span>
+          </div>
+
+          <button
+            onClick={() => onLockCamera('HUBBLE')}
+            style={lockBtnStyle('#9b59b6')}
+          >
+            LOCK CAMERA ON HUBBLE
+          </button>
+        </div>
+      )}
+
+      {activeSpacecraft === 'JWST' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <div
             style={{
@@ -178,7 +236,7 @@ const telemetryVal: React.CSSProperties = {
 };
 
 const lockBtnStyle = (color: string): React.CSSProperties => ({
-  background: `rgba(${color === '#ffaa00' ? '255, 170, 0' : '0, 240, 255'}, 0.1)`,
+  background: `rgba(${color === '#ffaa00' ? '255, 170, 0' : color === '#9b59b6' ? '155, 89, 182' : '0, 240, 255'}, 0.1)`,
   border: `1px solid ${color}`,
   color: color,
   padding: '0.4rem 0.8rem',

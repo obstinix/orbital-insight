@@ -113,6 +113,8 @@ export const MissionsPanel: React.FC = () => {
     } else if (targetName === 'JWST') {
       targetObj = engine.scene.getObjectByName('jwst_model') || null;
       useAchievementStore.getState().unlock('mission_jwst');
+    } else if (targetName === 'HUBBLE') {
+      targetObj = engine.scene.getObjectByName('hubble_model') || null;
     } else if (targetName === 'moon') {
       targetObj = engine.scene.getObjectByName('planet_group_moon') || null;
     } else if (targetName === 'saturn') {

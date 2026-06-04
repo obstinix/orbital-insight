@@ -103,21 +103,18 @@ export class StarField {
         twinklePhases[i] = Math.random() * Math.PI * 2.0;
       }
 
-      const geom = this.points.geometry;
-      geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-      geom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-      geom.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-      geom.setAttribute('twinklePhase', new THREE.BufferAttribute(twinklePhases, 1));
+      const oldGeom = this.points.geometry;
+      const newGeom = new THREE.BufferGeometry();
+      newGeom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      newGeom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+      newGeom.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+      newGeom.setAttribute('twinklePhase', new THREE.BufferAttribute(twinklePhases, 1));
 
-      // Signal Three.js that attributes changed
-      geom.attributes.position.needsUpdate = true;
-      geom.attributes.color.needsUpdate = true;
-      geom.attributes.size.needsUpdate = true;
-      geom.attributes.twinklePhase.needsUpdate = true;
+      newGeom.computeBoundingBox();
+      newGeom.computeBoundingSphere();
 
-      // Update bounding sphere/box
-      geom.computeBoundingBox();
-      geom.computeBoundingSphere();
+      this.points.geometry = newGeom;
+      oldGeom.dispose();
     } catch (error) {
       console.error('[StarField] Failed to load star catalog:', error);
     }

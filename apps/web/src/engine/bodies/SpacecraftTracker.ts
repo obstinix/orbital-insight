@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { useMissionStore } from '../../store/useMissionStore';
+import { loadModel } from '../loaders/AssetManager';
 
 export class SpacecraftTracker {
   public group: THREE.Group;
@@ -12,6 +13,10 @@ export class SpacecraftTracker {
   public jwstOrbitLine: THREE.Line;
   public jwstMesh: THREE.Group;
   public communicationLine: THREE.Line;
+
+  // Hubble elements
+  public hubbleOrbitLine: THREE.Line;
+  public hubbleMesh: THREE.Group;
 
   private earthGroup: THREE.Group;
   private earthBodyMesh: THREE.LOD;
@@ -177,6 +182,75 @@ export class SpacecraftTracker {
     this.communicationLine = new THREE.Line(commGeom, commMat);
     this.communicationLine.name = 'earth_jwst_comm_line';
     this.group.add(this.communicationLine);
+
+    // 6. Create Hubble Orbit Line (inc 28.5 deg)
+    const hubbleOrbitGeom = new THREE.BufferGeometry();
+    const hubbleOrbitMat = new THREE.LineBasicMaterial({
+      color: 0x9b59b6,
+      transparent: true,
+      opacity: 0.6,
+      blending: THREE.AdditiveBlending,
+      linewidth: 1.5,
+    });
+    this.hubbleOrbitLine = new THREE.Line(hubbleOrbitGeom, hubbleOrbitMat);
+    this.hubbleOrbitLine.name = 'hubble_orbit_line';
+    this.earthGroup.add(this.hubbleOrbitLine);
+
+    // 7. Create Hubble Mesh Placeholder
+    this.hubbleMesh = new THREE.Group();
+    this.hubbleMesh.name = 'hubble_model';
+
+    const hubbleBodyGeom = new THREE.CylinderGeometry(0.1, 0.1, 0.6, 12);
+    hubbleBodyGeom.rotateX(Math.PI / 2);
+    const hubbleBodyMat = new THREE.MeshStandardMaterial({ color: 0x999999, metalness: 0.9, roughness: 0.1 });
+    const hubbleBody = new THREE.Mesh(hubbleBodyGeom, hubbleBodyMat);
+    this.hubbleMesh.add(hubbleBody);
+
+    const hubblePanelMat = new THREE.MeshStandardMaterial({ color: 0x0055ff, metalness: 0.8, roughness: 0.2 });
+    const hubblePanelGeom = new THREE.BoxGeometry(0.02, 0.2, 0.5);
+    const hubblePanelL = new THREE.Mesh(hubblePanelGeom, hubblePanelMat);
+    hubblePanelL.position.set(-0.25, 0, 0);
+    const hubblePanelR = new THREE.Mesh(hubblePanelGeom, hubblePanelMat);
+    hubblePanelR.position.set(0.25, 0, 0);
+    this.hubbleMesh.add(hubblePanelL);
+    this.hubbleMesh.add(hubblePanelR);
+
+    this.earthGroup.add(this.hubbleMesh);
+
+    // 8. Asynchronously load the GLB models
+    loadModel('iss.glb').then((model) => {
+      while (this.issMesh.children.length > 0) {
+        this.issMesh.remove(this.issMesh.children[0]);
+      }
+      model.scale.set(0.015, 0.015, 0.015);
+      model.rotateX(Math.PI / 2);
+      this.issMesh.add(model);
+      console.log('[SpacecraftTracker] NASA ISS GLB model loaded.');
+    }).catch((err) => {
+      console.warn('[SpacecraftTracker] Fallback to procedural ISS mesh:', err);
+    });
+
+    loadModel('jwst.glb').then((model) => {
+      while (this.jwstMesh.children.length > 0) {
+        this.jwstMesh.remove(this.jwstMesh.children[0]);
+      }
+      model.scale.set(0.35, 0.35, 0.35);
+      this.jwstMesh.add(model);
+      console.log('[SpacecraftTracker] NASA JWST GLB model loaded.');
+    }).catch((err) => {
+      console.warn('[SpacecraftTracker] Fallback to procedural JWST mesh:', err);
+    });
+
+    loadModel('hubble.glb').then((model) => {
+      while (this.hubbleMesh.children.length > 0) {
+        this.hubbleMesh.remove(this.hubbleMesh.children[0]);
+      }
+      model.scale.set(0.12, 0.12, 0.12);
+      this.hubbleMesh.add(model);
+      console.log('[SpacecraftTracker] NASA Hubble GLB model loaded.');
+    }).catch((err) => {
+      console.warn('[SpacecraftTracker] Fallback to procedural Hubble mesh:', err);
+    });
   }
 
   /**
@@ -312,15 +386,62 @@ export class SpacecraftTracker {
     ];
     this.communicationLine.geometry.setFromPoints(laserPoints);
 
+    // ─── PART 4.5: UPDATE HUBBLE ──────────────────────────────────
+    // Hubble is at ~540km altitude. Scale is 7.5 * (540 / 6371) = 0.63 units.
+    // Total Hubble radius is 7.5 + 0.63 = ~8.13 units.
+    const hubbleRadius = 8.13;
+    const hubblePeriod = 5700;
+    const hubbleAngle = (elapsedSeconds / hubblePeriod) * 2 * Math.PI;
+    const hubbleLatRad = Math.sin(hubbleAngle) * THREE.MathUtils.degToRad(28.5);
+    const hubbleLonRad = hubbleAngle + earthSpin;
+
+    const hubblePos = new THREE.Vector3(
+      hubbleRadius * Math.cos(hubbleLatRad) * Math.sin(hubbleLonRad),
+      hubbleRadius * Math.sin(hubbleLatRad),
+      hubbleRadius * Math.cos(hubbleLatRad) * Math.cos(hubbleLonRad)
+    );
+    hubblePos.applyAxisAngle(new THREE.Vector3(0, 0, 1), axialTiltRad);
+    this.hubbleMesh.position.copy(hubblePos);
+
+    // Rotate Hubble to face its direction of motion
+    const hubbleTangent = new THREE.Vector3(-Math.sin(hubbleLonRad), 0, -Math.cos(hubbleLonRad));
+    hubbleTangent.applyAxisAngle(new THREE.Vector3(0, 0, 1), axialTiltRad).normalize();
+    this.hubbleMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), hubbleTangent);
+
+    // Hubble Orbit Line
+    const hubbleOrbitPoints: THREE.Vector3[] = [];
+    for (let step = 0; step <= segments; step++) {
+      const tOffset = (step / segments) * hubblePeriod;
+      const angle = ((elapsedSeconds + tOffset) / hubblePeriod) * 2 * Math.PI;
+
+      const stepLat = Math.sin(angle) * 28.5;
+      const stepLon = (angle * (180 / Math.PI)) % 360;
+
+      const stepLatRad = THREE.MathUtils.degToRad(stepLat);
+      const stepLonRad = THREE.MathUtils.degToRad(stepLon) + earthSpin;
+
+      const pt = new THREE.Vector3(
+        hubbleRadius * Math.cos(stepLatRad) * Math.sin(stepLonRad),
+        hubbleRadius * Math.sin(stepLatRad),
+        hubbleRadius * Math.cos(stepLatRad) * Math.cos(stepLonRad)
+      );
+      pt.applyAxisAngle(new THREE.Vector3(0, 0, 1), axialTiltRad);
+      hubbleOrbitPoints.push(pt);
+    }
+    this.hubbleOrbitLine.geometry.setFromPoints(hubbleOrbitPoints);
+
     // ─── PART 5: DYNAMIC HUD FILTERING VISIBILITY ─────────────────
     // Toggle active spacecraft visibilities
     const isMissionsRoute = window.location.hash.includes('/missions');
+    const { activeSpacecraft } = useMissionStore.getState();
     
-    this.issOrbitLine.visible = isMissionsRoute;
+    this.issOrbitLine.visible = isMissionsRoute && activeSpacecraft === 'ISS';
     this.issMesh.visible = isMissionsRoute;
-    this.jwstOrbitLine.visible = isMissionsRoute;
+    this.jwstOrbitLine.visible = isMissionsRoute && activeSpacecraft === 'JWST';
     this.jwstMesh.visible = isMissionsRoute;
-    this.communicationLine.visible = isMissionsRoute;
+    this.communicationLine.visible = isMissionsRoute && activeSpacecraft === 'JWST';
+    this.hubbleOrbitLine.visible = isMissionsRoute && activeSpacecraft === 'HUBBLE';
+    this.hubbleMesh.visible = isMissionsRoute;
   }
 
   public dispose(): void {
@@ -338,6 +459,16 @@ export class SpacecraftTracker {
     this.jwstOrbitLine.geometry.dispose();
     (this.jwstOrbitLine.material as THREE.Material).dispose();
     this.jwstMesh.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        child.geometry.dispose();
+        (child.material as THREE.Material).dispose();
+      }
+    });
+
+    // Clean up Hubble
+    this.hubbleOrbitLine.geometry.dispose();
+    (this.hubbleOrbitLine.material as THREE.Material).dispose();
+    this.hubbleMesh.traverse((child) => {
       if (child instanceof THREE.Mesh) {
         child.geometry.dispose();
         (child.material as THREE.Material).dispose();
