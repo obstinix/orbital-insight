@@ -10,4 +10,16 @@ export default defineConfig({
       '/api': 'http://localhost:3000',
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'three-core': ['three'],
+          'astronomy': ['astronomy-engine'],
+          'animation': ['gsap', 'framer-motion'],
+        },
+      },
+    },
+  },
+  assetsInclude: ['**/*.bin'],
 });
