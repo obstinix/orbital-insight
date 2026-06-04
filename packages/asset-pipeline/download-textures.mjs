@@ -24,14 +24,14 @@ const TEXTURES = [
 
   // VENUS
   { name: 'venus/venus_atmo_4k.jpg', url: 'https://www.solarsystemscope.com/textures/download/4k_venus_atmosphere.jpg' },
-  { name: 'venus/venus_surface_4k.jpg', url: 'https://www.solarsystemscope.com/textures/download/4k_venus_surface.jpg' },
+  { name: 'venus/venus_surface_2k.jpg', url: 'https://www.solarsystemscope.com/textures/download/2k_venus_surface.jpg' },
 
   // EARTH — NASA Visible Earth (public domain) for maximum realism
   { name: 'earth/earth_day_8k.jpg', url: 'https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73909/world.topo.bathy.200412.3x5400x2700.jpg' },
   { name: 'earth/earth_night_8k.jpg', url: 'https://eoimages.gsfc.nasa.gov/images/imagerecords/79000/79765/dnb_land_ocean_ice.2012.3600x1800.jpg' },
   { name: 'earth/earth_clouds_2k.jpg', url: 'https://www.solarsystemscope.com/textures/download/2k_earth_clouds.jpg' },
-  { name: 'earth/earth_normal_2k.jpg', url: 'https://www.solarsystemscope.com/textures/download/2k_earth_normal_map.jpg' },
-  { name: 'earth/earth_specular_2k.jpg', url: 'https://www.solarsystemscope.com/textures/download/2k_earth_specular_map.jpg' },
+  { name: 'earth/earth_normal_2k.jpg', url: 'https://www.solarsystemscope.com/textures/download/2k_earth_normal_map.tif' },
+  { name: 'earth/earth_specular_2k.jpg', url: 'https://www.solarsystemscope.com/textures/download/2k_earth_specular_map.tif' },
 
   // MOON
   { name: 'moon/moon_8k.jpg', url: 'https://www.solarsystemscope.com/textures/download/8k_moon.jpg' },
@@ -75,6 +75,9 @@ async function download(item, retries = 3) {
 
   await mkdir(path.dirname(dest), { recursive: true });
 
+  const isTif = item.url.endsWith('.tif');
+  const tempDest = isTif ? `${dest}.tif` : dest;
+
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const res = await fetch(item.url, {
@@ -91,8 +94,15 @@ async function download(item, retries = 3) {
 
       await pipeline(
         Readable.fromWeb(res.body),
-        createWriteStream(dest)
+        createWriteStream(tempDest)
       );
+
+      if (isTif) {
+        const { execSync } = await import('child_process');
+        const { unlink } = await import('fs/promises');
+        execSync(`sips -s format jpeg "${tempDest}" --out "${dest}"`, { stdio: 'ignore' });
+        await unlink(tempDest);
+      }
 
       console.log(`✓ ${item.name} (${sizeMB})`);
       return;
