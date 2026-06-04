@@ -162,3 +162,42 @@ export function loadTexture(path: string): Promise<THREE.Texture> {
     }
   });
 }
+
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+
+let gltfLoader: GLTFLoader | null = null;
+
+export function getGLTFLoader(): GLTFLoader {
+  if (gltfLoader) return gltfLoader;
+
+  const dracoLoader = new DRACOLoader();
+  dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+
+  gltfLoader = new GLTFLoader();
+  gltfLoader.setDRACOLoader(dracoLoader);
+
+  return gltfLoader;
+}
+
+/**
+ * Loads a glTF/glb 3D model.
+ */
+export function loadModel(path: string): Promise<THREE.Group> {
+  const loader = getGLTFLoader();
+  const fullUrl = path.startsWith('http') ? path : `/models/${path}`;
+
+  return new Promise((resolve, reject) => {
+    loader.load(
+      fullUrl,
+      (gltf) => {
+        resolve(gltf.scene);
+      },
+      undefined,
+      (error) => {
+        console.error(`[AssetManager] Failed to load 3D model: ${path}`, error);
+        reject(error);
+      }
+    );
+  });
+}

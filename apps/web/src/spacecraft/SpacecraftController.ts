@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import warpVert from '../engine/shaders/warp.vert';
 import warpFrag from '../engine/shaders/warp.frag';
 import { useEngineStore } from '../store/useEngineStore';
+import { loadModel } from '../engine/loaders/AssetManager';
 
 export type SpacecraftState = 'IDLE' | 'THRUSTING' | 'WARPING' | 'ORBITING';
 
@@ -22,8 +23,27 @@ export class SpacecraftController {
     this.camera = camera;
 
     // 1. Create spacecraft mesh
-    this.mesh = this.createSpacecraftMesh();
+    this.mesh = new THREE.Group();
+    this.mesh.name = 'spacecraft';
     this.scene.add(this.mesh);
+
+    const placeholder = this.createSpacecraftMeshPlaceholder();
+    placeholder.name = 'placeholder';
+    this.mesh.add(placeholder);
+
+    // Asynchronously load real NASA Voyager GLB model
+    loadModel('voyager.glb').then((model) => {
+      const p = this.mesh.getObjectByName('placeholder');
+      if (p) this.mesh.remove(p);
+
+      // Center and align Voyager model
+      model.scale.set(1.5, 1.5, 1.5);
+      model.rotateY(Math.PI); // align orientation with flight path
+      this.mesh.add(model);
+      console.log('[SpacecraftController] Voyager 3D model integrated.');
+    }).catch((err) => {
+      console.warn('[SpacecraftController] Fallback to procedural mesh:', err);
+    });
 
     // Initial position: relative to Earth
     const earthObj = this.scene.getObjectByName('planet_group_earth');
@@ -66,7 +86,7 @@ export class SpacecraftController {
     this.camera.add(this.warpQuad);
   }
 
-  private createSpacecraftMesh(): THREE.Group {
+  private createSpacecraftMeshPlaceholder(): THREE.Group {
     const group = new THREE.Group();
     group.name = 'spacecraft';
 
