@@ -10,8 +10,7 @@
   "eccentricity": 0.2056,
   "inclination_deg": 7,
   "textures": {
-    "diffuse": "mercury_diffuse.basis",
-    "normal": "mercury_normal.basis"
+    "diffuse": "mercury/mercury_8k.jpg"
   },
   "moons": [],
   "facts": {
