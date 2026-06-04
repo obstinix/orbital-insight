@@ -50,7 +50,9 @@ export function useEngineInit(canvasRef: React.RefObject<HTMLCanvasElement | nul
     initAssetManager(renderer);
     const sceneGraph = createSceneGraph();
 
-    const aspect = canvas.clientWidth / canvas.clientHeight;
+    const width = canvas.clientWidth || window.innerWidth || 800;
+    const height = canvas.clientHeight || window.innerHeight || 600;
+    const aspect = width / height;
     const camera = new THREE.PerspectiveCamera(60, aspect, 0.1, 20000);
     camera.layers.enableAll();
     camera.position.set(0, 100, 350); // Set camera slightly higher and further back to see orbits
@@ -192,14 +194,17 @@ export function useEngineInit(canvasRef: React.RefObject<HTMLCanvasElement | nul
     // Handle resize
     const handleResize = () => {
       if (!canvasRef.current) return;
-      const width = canvasRef.current.clientWidth;
-      const height = canvasRef.current.clientHeight;
+      const width = canvasRef.current.clientWidth || window.innerWidth || 800;
+      const height = canvasRef.current.clientHeight || window.innerHeight || 600;
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height, false);
       composer.setSize(width, height);
     };
     window.addEventListener('resize', handleResize);
+    
+    // Call once immediately to align sizes on mount
+    handleResize();
 
     // Listen for audio unlock event (from LandingHero CTA click)
     const handleAudioUnlock = () => {
