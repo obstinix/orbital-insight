@@ -18,6 +18,14 @@
     },
     "typecheck": {
       "outputs": []
+    },
+    "assets:download": {
+      "cache": true,
+      "outputs": ["apps/web/public/textures/**", "apps/web/public/stars/**", "apps/web/public/constellations/**"]
+    },
+    "assets:process": {
+      "dependsOn": ["assets:download"],
+      "cache": true
     }
   }
 }
