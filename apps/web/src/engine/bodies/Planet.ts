@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { PlanetConfig } from '@orbital-insight/shared-types';
 import { loadTexture } from '../loaders/AssetManager';
+import { getPlanetOrbitPosition, getOrbitSemiMajorAxis } from '../simulation/orbits';
 import atmosphereVertexShader from '../shaders/atmosphere.vert';
 import atmosphereFragmentShader from '../shaders/atmosphere.frag';
 import sunVertexShader from '../shaders/sun.vert';
@@ -11,7 +12,6 @@ import ringsVertexShader from '../shaders/rings.vert';
 import ringsFragmentShader from '../shaders/rings.frag';
 
 // Scale factor: 1 AU = 150 Three.js units
-const AU_TO_UNITS = 150;
 const VISUAL_PLANET_SCALE = 0.0015; // Visual scaling factor so planets can be seen in orbits
 const BASE_DATE_MS = new Date('2026-01-01T00:00:00Z').getTime();
 
@@ -343,52 +343,14 @@ export class Planet {
    * Helper to retrieve visually scaled semi-major axis values for moons.
    */
   private getOrbitSemiMajorAxis(): number {
-    const a = this.config.semi_major_axis_au * AU_TO_UNITS;
-    switch (this.id) {
-      case 'moon': return a * 12.0;      // Earth's Moon: ~4.6 units (Earth radius: 1.5)
-      case 'io': return a * 25.0;        // Io: ~10.5 units (Jupiter radius: 7.5)
-      case 'europa': return a * 25.0;    // Europa: ~16.8 units
-      case 'ganymede': return a * 25.0;  // Ganymede: ~26.8 units
-      case 'callisto': return a * 25.0;  // Callisto: ~47.2 units
-      case 'enceladus': return a * 70.0; // Enceladus: ~16.7 units (Saturn radius: 6.0 + rings)
-      case 'titan': return a * 30.0;     // Titan: ~36.7 units
-      default: return a;
-    }
+    return getOrbitSemiMajorAxis(this.id, this.config.semi_major_axis_au);
   }
 
   /**
-   * Evaluates Keplerian orbit equations to find heliocentric positions.
+   * Evaluates orbital positions using astronomy-engine or custom Keplerian solver.
    */
   private solveKeplerOrbit(simulatedDate: Date): THREE.Vector3 {
-    const a = this.getOrbitSemiMajorAxis();
-    const e = this.config.eccentricity;
-    const i = THREE.MathUtils.degToRad(this.config.inclination_deg);
-    const T = this.config.orbital_period_days;
-
-    if (T === 0) return new THREE.Vector3(0, 0, 0);
-
-    // Calculate number of simulated days since base epoch
-    const diffDays = (simulatedDate.getTime() - BASE_DATE_MS) / (1000 * 86400);
-    
-    // Keplerian Mean Anomaly
-    const M = (diffDays / T) * 2 * Math.PI;
-
-    // Solve Kepler's equation E - e sin(E) = M using Newtonian approximation
-    let E = M;
-    for (let iteration = 0; iteration < 5; iteration++) {
-      E = E - (E - e * Math.sin(E) - M) / (1.0 - e * Math.cos(E));
-    }
-
-    // Position in orbital plane coordinate space
-    const xOrb = a * (Math.cos(E) - e);
-    const yOrb = a * Math.sqrt(1 - e * e) * Math.sin(E);
-
-    // Rotate by inclination angle i (Omega = 0)
-    const x = xOrb;
-    const y = yOrb * Math.sin(i);
-    const z = yOrb * Math.cos(i);
-
-    return new THREE.Vector3(x, y, z);
+    return getPlanetOrbitPosition(this.config, simulatedDate);
   }
 
   /**
