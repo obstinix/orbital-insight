@@ -111,8 +111,17 @@ export function loadTexture(path: string): Promise<THREE.Texture> {
     return Promise.resolve(textureCache.get(path)!);
   }
 
+  // Resolve URL: use CDN if configured, otherwise load from local /textures/ dir
+  // In dev mode, Vite serves public/ at root, so /textures/earth/earth_day_8k.jpg works
   const cdnBase = import.meta.env.VITE_CDN_BASE_URL || '';
-  const fullUrl = path.startsWith('http') ? path : `${cdnBase}/textures/${path}`;
+  let fullUrl: string;
+  if (path.startsWith('http')) {
+    fullUrl = path;
+  } else if (cdnBase) {
+    fullUrl = `${cdnBase}/textures/${path}`;
+  } else {
+    fullUrl = `/textures/${path}`;
+  }
 
   return new Promise((resolve) => {
     const handleSuccess = (texture: THREE.Texture) => {
