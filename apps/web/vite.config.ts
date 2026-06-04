@@ -15,7 +15,6 @@ export default defineConfig({
       output: {
         manualChunks: {
           'three-core': ['three'],
-          'astronomy': ['astronomy-engine'],
           'animation': ['gsap', 'framer-motion'],
         },
       },
