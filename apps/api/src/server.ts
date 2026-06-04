@@ -9,6 +9,7 @@ import { validateEnv, getEnv } from './config/env.js';
 import guideRoutes from './routes/guide.js';
 import missionRoutes from './routes/missions.js';
 import profileRoutes from './routes/profile.js';
+import exoplanetRoutes from './routes/exoplanets.js';
 import { initializeDatabase } from './db/client.js';
 import * as Sentry from '@sentry/node';
 
@@ -108,6 +109,7 @@ const bootstrap = async () => {
   await fastify.register(guideRoutes, { prefix: '/api' });
   await fastify.register(missionRoutes, { prefix: '/api' });
   await fastify.register(profileRoutes, { prefix: '/api' });
+  await fastify.register(exoplanetRoutes, { prefix: '/api' });
 
   // Health endpoint with TypeBox Schema Validation
   fastify.get(
