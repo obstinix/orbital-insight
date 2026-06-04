@@ -9,9 +9,7 @@
   "semi_major_axis_au": 0.00817,
   "eccentricity": 0.0288,
   "inclination_deg": 0.358,
-  "textures": {
-    "diffuse": "titan_diffuse.basis"
-  },
+  "textures": {},
   "moons": [],
   "facts": {
     "source": "NASA Solar System Exploration",
