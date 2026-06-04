@@ -1,0 +1,14 @@
+{
+  "name": "@orbital-insight/asset-pipeline",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "download": "node download-textures.mjs",
+    "stars": "node process-stars.mjs",
+    "constellations": "node download-constellations.mjs"
+  },
+  "dependencies": {
+    "papaparse": "^5.4.1"
+  }
+}
