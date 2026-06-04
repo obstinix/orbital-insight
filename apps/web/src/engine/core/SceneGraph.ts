@@ -45,12 +45,14 @@ export function createSceneGraph(): SceneGraph {
 
   // Near-zero ambient light representing the cold dark void of space
   const ambientLight = new THREE.AmbientLight(0xE8F0FF, 0.02);
+  ambientLight.layers.enableAll();
   scene.add(ambientLight);
 
   // Primary light source - The Sun
   const sunLight = new THREE.PointLight(0xFFF4EA, 3.5, 2000);
   sunLight.position.set(0, 0, 0);
   sunLight.castShadow = true;
+  sunLight.layers.enableAll();
   
   // Shadow resolution settings for high quality rendering
   sunLight.shadow.mapSize.width = 2048;
