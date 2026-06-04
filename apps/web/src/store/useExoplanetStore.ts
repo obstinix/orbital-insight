@@ -18,6 +18,7 @@ export interface Exoplanet {
 
 interface ExoplanetState {
   selectedExoplanetId: string | null;
+  activeExoplanet: Exoplanet | null;
   showExoplanetCanvas: boolean;
   exoplanets: Exoplanet[];
   totalCount: number;
@@ -36,6 +37,7 @@ interface ExoplanetState {
 
 export const useExoplanetStore = create<ExoplanetState>((set, get) => ({
   selectedExoplanetId: null,
+  activeExoplanet: null,
   showExoplanetCanvas: false,
   exoplanets: [],
   totalCount: 0,
@@ -45,7 +47,31 @@ export const useExoplanetStore = create<ExoplanetState>((set, get) => ({
   page: 1,
   limit: 20, // Display 20 per page for optimal visual UI sizing
 
-  setSelectedExoplanetId: (id) => set({ selectedExoplanetId: id }),
+  setSelectedExoplanetId: async (id) => {
+    set({ selectedExoplanetId: id });
+    if (!id) {
+      set({ activeExoplanet: null });
+      return;
+    }
+    // Check if it's already in the current list
+    const existing = get().exoplanets.find(p => p.id === id);
+    if (existing) {
+      set({ activeExoplanet: existing });
+      return;
+    }
+
+    // Otherwise fetch details from API
+    const API_BASE = import.meta.env.VITE_API_URL || '';
+    try {
+      const res = await fetch(`${API_BASE}/api/exoplanets/${id}`);
+      if (res.ok) {
+        const data = await res.json() as Exoplanet;
+        set({ activeExoplanet: data });
+      }
+    } catch (err) {
+      console.error('[ExoplanetStore] Failed to fetch exoplanet details:', err);
+    }
+  },
   setShowExoplanetCanvas: (val) => set({ showExoplanetCanvas: val }),
   
   setSearch: (term) => {
