@@ -19,7 +19,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CSV_PATH = path.resolve(__dirname, 'hygdata_v41.csv');
 const OUTPUT_DIR = path.resolve(__dirname, '../../apps/web/public/stars');
 const OUTPUT_PATH = path.resolve(OUTPUT_DIR, 'hyg_stars.bin');
-const HYG_URL = 'https://raw.githubusercontent.com/astronexus/HYG-Database/master/hyg/v41/hygdata_v41.csv';
+// HYG v4.2 from astronexus.com (gzipped CSV, ~14MB)
+const HYG_URL = 'https://www.astronexus.com/downloads/catalogs/hygdata_v42.csv.gz';
+const HYG_IS_GZIPPED = true;
 
 const MAG_LIMIT = 8.0; // Include all stars visible with binoculars
 const FLOATS_PER_STAR = 7;
@@ -71,21 +73,32 @@ async function downloadCSV() {
     return;
   } catch { /* not found, download */ }
 
-  console.log('⬇  Downloading HYG Database v41...');
+  console.log(`⬇  Downloading HYG Database from ${HYG_URL}...`);
   const res = await fetch(HYG_URL, {
     headers: { 'User-Agent': 'orbital-insight-asset-pipeline/1.0' },
     signal: AbortSignal.timeout(120_000),
+    redirect: 'follow',
   });
 
   if (!res.ok) throw new Error(`Failed to download HYG: HTTP ${res.status}`);
 
-  await pipeline(
-    Readable.fromWeb(res.body),
-    createWriteStream(CSV_PATH)
-  );
+  if (HYG_IS_GZIPPED) {
+    const { createGunzip } = await import('zlib');
+    const gunzip = createGunzip();
+    await pipeline(
+      Readable.fromWeb(res.body),
+      gunzip,
+      createWriteStream(CSV_PATH)
+    );
+  } else {
+    await pipeline(
+      Readable.fromWeb(res.body),
+      createWriteStream(CSV_PATH)
+    );
+  }
 
   const stats = await stat(CSV_PATH);
-  console.log(`✓ Downloaded HYG CSV (${(stats.size / 1024 / 1024).toFixed(1)} MB)`);
+  console.log(`✓ Downloaded HYG CSV (${(stats.size / 1024 / 1024).toFixed(1)} MB decompressed)`);
 }
 
 async function processCSV() {
@@ -93,7 +106,8 @@ async function processCSV() {
 
   const csvText = await readFile(CSV_PATH, 'utf-8');
   const lines = csvText.split('\n');
-  const headers = lines[0].split(',');
+  // Strip surrounding quotes from headers (HYG v42 uses "ra","dec",...)
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
 
   // Find column indices
   const colIdx = {};
@@ -116,7 +130,7 @@ async function processCSV() {
     const line = lines[i].trim();
     if (!line) continue;
 
-    const cols = line.split(',');
+    const cols = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
     const ra = parseFloat(cols[colIdx.ra]);     // hours (0-24)
     const dec = parseFloat(cols[colIdx.dec]);    // degrees (-90 to 90)
     const mag = parseFloat(cols[colIdx.mag]);    // apparent magnitude
@@ -187,7 +201,7 @@ async function writeNamedStarsIndex(csvText, headers, colIdx) {
     const line = lines[i].trim();
     if (!line) continue;
 
-    const cols = line.split(',');
+    const cols = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
     const proper = cols[properIdx]?.trim();
     if (!proper) continue;
 
