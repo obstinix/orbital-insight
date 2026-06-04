@@ -10,11 +10,11 @@
   "eccentricity": 0.0167,
   "inclination_deg": 0,
   "textures": {
-    "diffuse": "earth_diffuse_8k.basis",
-    "normal": "earth_normal_4k.basis",
-    "specular": "earth_specular_4k.basis",
-    "night": "earth_lights_4k.basis",
-    "clouds": "earth_clouds_2k.basis"
+    "diffuse": "earth/earth_day_8k.jpg",
+    "normal": "earth/earth_normal_2k.jpg",
+    "specular": "earth/earth_specular_2k.jpg",
+    "night": "earth/earth_night_8k.jpg",
+    "clouds": "earth/earth_clouds_2k.jpg"
   },
   "atmosphere": {
     "radius_scale": 1.025,
