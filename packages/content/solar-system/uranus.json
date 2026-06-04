@@ -10,7 +10,7 @@
   "eccentricity": 0.0471,
   "inclination_deg": 0.77,
   "textures": {
-    "diffuse": "uranus_diffuse.basis"
+    "diffuse": "uranus/uranus_2k.jpg"
   },
   "ring": {
     "inner_radius_scale": 1.3,
