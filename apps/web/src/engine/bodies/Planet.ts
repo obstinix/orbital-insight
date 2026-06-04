@@ -3,6 +3,12 @@ import { PlanetConfig } from '@orbital-insight/shared-types';
 import { loadTexture } from '../loaders/AssetManager';
 import atmosphereVertexShader from '../shaders/atmosphere.vert';
 import atmosphereFragmentShader from '../shaders/atmosphere.frag';
+import sunVertexShader from '../shaders/sun.vert';
+import sunFragmentShader from '../shaders/sun.frag';
+import earthVertexShader from '../shaders/earth.vert';
+import earthFragmentShader from '../shaders/earth.frag';
+import ringsVertexShader from '../shaders/rings.vert';
+import ringsFragmentShader from '../shaders/rings.frag';
 
 // Scale factor: 1 AU = 150 Three.js units
 const AU_TO_UNITS = 150;
@@ -21,6 +27,9 @@ export class Planet {
 
   private rotationSpeed: number; // Rad/sec
   private axialTiltRad: number;
+  private sunMaterial: THREE.ShaderMaterial | null = null;
+  private earthMaterial: THREE.ShaderMaterial | null = null;
+  private ringMaterial: THREE.ShaderMaterial | null = null;
 
   constructor(config: PlanetConfig) {
     this.id = config.id;
@@ -59,42 +68,97 @@ export class Planet {
     // Deduce a representative fallback solid color for standard material
     const baseColor = this.getPlanetColor(config.id);
 
-    // Material using high roughness/metalness defaults
-    const planetMaterial = new THREE.MeshStandardMaterial({
-      color: baseColor,
-      roughness: 0.8,
-      metalness: 0.1,
-    });
+    let planetMaterial: THREE.Material;
 
-    // Asynchronously load and apply Basis Universal or standard texture maps
-    if (config.textures) {
-      if (config.textures.diffuse) {
+    if (config.id === 'sun') {
+      const sunMat = new THREE.ShaderMaterial({
+        vertexShader: sunVertexShader,
+        fragmentShader: sunFragmentShader,
+        uniforms: {
+          uTime: { value: 0 },
+          sunTexture: { value: new THREE.Texture() },
+        },
+      });
+      this.sunMaterial = sunMat;
+      planetMaterial = sunMat;
+
+      if (config.textures && config.textures.diffuse) {
         loadTexture(config.textures.diffuse).then((texture) => {
-          planetMaterial.map = texture;
-          planetMaterial.color.setHex(0xffffff); // clear solid fallback tint
-          planetMaterial.needsUpdate = true;
+          sunMat.uniforms.sunTexture.value = texture;
+          sunMat.needsUpdate = true;
         });
       }
-      if (config.textures.normal) {
-        loadTexture(config.textures.normal).then((texture) => {
-          planetMaterial.normalMap = texture;
-          planetMaterial.normalScale.set(1.2, 1.2);
-          planetMaterial.needsUpdate = true;
-        });
+    } else if (config.id === 'earth') {
+      const earthMat = new THREE.ShaderMaterial({
+        vertexShader: earthVertexShader,
+        fragmentShader: earthFragmentShader,
+        uniforms: {
+          dayTexture: { value: new THREE.Texture() },
+          nightTexture: { value: new THREE.Texture() },
+          normalMap: { value: new THREE.Texture() },
+          specularMap: { value: new THREE.Texture() },
+          sunDirection: { value: new THREE.Vector3(1, 0, 0) },
+        },
+      });
+      this.earthMaterial = earthMat;
+      planetMaterial = earthMat;
+
+      if (config.textures) {
+        if (config.textures.diffuse) {
+          loadTexture(config.textures.diffuse).then((texture) => {
+            earthMat.uniforms.dayTexture.value = texture;
+            earthMat.needsUpdate = true;
+          });
+        }
+        if (config.textures.night) {
+          loadTexture(config.textures.night).then((texture) => {
+            earthMat.uniforms.nightTexture.value = texture;
+            earthMat.needsUpdate = true;
+          });
+        }
+        if (config.textures.normal) {
+          loadTexture(config.textures.normal).then((texture) => {
+            earthMat.uniforms.normalMap.value = texture;
+            earthMat.needsUpdate = true;
+          });
+        }
+        if (config.textures.specular) {
+          loadTexture(config.textures.specular).then((texture) => {
+            earthMat.uniforms.specularMap.value = texture;
+            earthMat.needsUpdate = true;
+          });
+        }
       }
-      if (config.textures.specular) {
-        loadTexture(config.textures.specular).then((texture) => {
-          planetMaterial.roughnessMap = texture;
-          planetMaterial.metalnessMap = texture;
-          planetMaterial.needsUpdate = true;
-        });
-      }
-      if (config.textures.emissive) {
-        loadTexture(config.textures.emissive).then((texture) => {
-          planetMaterial.emissiveMap = texture;
-          planetMaterial.emissive.setHex(0xffffff);
-          planetMaterial.needsUpdate = true;
-        });
+    } else {
+      const stdMat = new THREE.MeshStandardMaterial({
+        color: baseColor,
+        roughness: 0.8,
+        metalness: 0.1,
+      });
+      planetMaterial = stdMat;
+
+      if (config.textures) {
+        if (config.textures.diffuse) {
+          loadTexture(config.textures.diffuse).then((texture) => {
+            stdMat.map = texture;
+            stdMat.color.setHex(0xffffff); // clear fallback tint
+            stdMat.needsUpdate = true;
+          });
+        }
+        if (config.textures.normal) {
+          loadTexture(config.textures.normal).then((texture) => {
+            stdMat.normalMap = texture;
+            stdMat.normalScale.set(1.2, 1.2);
+            stdMat.needsUpdate = true;
+          });
+        }
+        if (config.textures.specular) {
+          loadTexture(config.textures.specular).then((texture) => {
+            stdMat.roughnessMap = texture;
+            stdMat.metalnessMap = texture;
+            stdMat.needsUpdate = true;
+          });
+        }
       }
     }
 
@@ -145,20 +209,47 @@ export class Planet {
 
     // 4. Custom Ring System (Saturn, Uranus)
     if (config.ring) {
+      const innerRad = visualRadius * config.ring.inner_radius_scale;
+      const outerRad = visualRadius * config.ring.outer_radius_scale;
       const ringGeom = new THREE.RingGeometry(
-        visualRadius * config.ring.inner_radius_scale,
-        visualRadius * config.ring.outer_radius_scale,
+        innerRad,
+        outerRad,
         64
       );
       // Align ring horizontally
       ringGeom.rotateX(Math.PI / 2);
-      const ringMat = new THREE.MeshStandardMaterial({
-        color: baseColor.clone().multiplyScalar(0.85),
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.7,
-        roughness: 0.6,
-      });
+
+      let ringMat: THREE.Material;
+      if (config.ring.texture) {
+        const customRingMat = new THREE.ShaderMaterial({
+          vertexShader: ringsVertexShader,
+          fragmentShader: ringsFragmentShader,
+          uniforms: {
+            ringTexture: { value: new THREE.Texture() },
+            sunDirection: { value: new THREE.Vector3(1, 0, 0) },
+            innerRadius: { value: innerRad },
+            outerRadius: { value: outerRad },
+          },
+          side: THREE.DoubleSide,
+          transparent: true,
+        });
+        this.ringMaterial = customRingMat;
+        ringMat = customRingMat;
+
+        loadTexture(config.ring.texture).then((texture) => {
+          customRingMat.uniforms.ringTexture.value = texture;
+          customRingMat.needsUpdate = true;
+        });
+      } else {
+        ringMat = new THREE.MeshStandardMaterial({
+          color: baseColor.clone().multiplyScalar(0.85),
+          side: THREE.DoubleSide,
+          transparent: true,
+          opacity: 0.7,
+          roughness: 0.6,
+        });
+      }
+
       const ringMesh = new THREE.Mesh(ringGeom, ringMat);
       ringMesh.name = `ring_${this.id}`;
       // Ring follows axial tilt
@@ -224,6 +315,22 @@ export class Planet {
       const position = this.solveKeplerOrbit(simulatedDate);
       // Offset by parent position (for moons)
       this.group.position.copy(position).add(parentPos);
+    }
+
+    // Update shader uniforms
+    if (this.sunMaterial) {
+      this.sunMaterial.uniforms.uTime.value = (simulatedDate.getTime() - BASE_DATE_MS) / 1000;
+    }
+
+    // Determine direction pointing to the sun from the planet (Sun is at 0, 0, 0)
+    const toSun = this.group.position.clone().negate().normalize();
+
+    if (this.earthMaterial) {
+      this.earthMaterial.uniforms.sunDirection.value.copy(toSun);
+    }
+
+    if (this.ringMaterial) {
+      this.ringMaterial.uniforms.sunDirection.value.copy(toSun);
     }
 
     // 3. Rotate clouds at a slightly offset rate
