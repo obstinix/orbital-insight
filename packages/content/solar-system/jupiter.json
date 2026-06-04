@@ -10,7 +10,7 @@
   "eccentricity": 0.0489,
   "inclination_deg": 1.3,
   "textures": {
-    "diffuse": "jupiter_diffuse.basis"
+    "diffuse": "jupiter/jupiter_8k.jpg"
   },
   "atmosphere": {
     "radius_scale": 1.02,
