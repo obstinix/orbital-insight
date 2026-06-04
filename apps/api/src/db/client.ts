@@ -1,6 +1,6 @@
 import pg from 'pg';
 import { getEnv } from '../config/env.js';
-import exoplanetsData from '../../../../packages/content/exoplanets.json';
+import exoplanetsData from '../../../../packages/content/exoplanets.json' assert { type: 'json' };
 
 const { Pool } = pg;
 
@@ -231,8 +231,8 @@ export async function query(text: string, params: unknown[] = []): Promise<pg.Qu
 
   // 5. Get exoplanets count: select count(*) from exoplanets ...
   if (sql.includes('select count(*) from exoplanets')) {
-    const search = (params[0] || '').toLowerCase().replace(/%/g, '');
-    const category = params[1] || 'ALL';
+    const search = String(params[0] || '').toLowerCase().replace(/%/g, '');
+    const category = String(params[1] || 'ALL');
 
     let list = mockExoplanets;
     if (search) {
@@ -263,8 +263,8 @@ export async function query(text: string, params: unknown[] = []): Promise<pg.Qu
 
   // 7. Get exoplanets paginated: select * from exoplanets ...
   if (sql.includes('select * from exoplanets')) {
-    const search = (params[0] || '').toLowerCase().replace(/%/g, '');
-    const category = params[1] || 'ALL';
+    const search = String(params[0] || '').toLowerCase().replace(/%/g, '');
+    const category = String(params[1] || 'ALL');
     const limit = typeof params[2] === 'number' ? params[2] : 50;
     const offset = typeof params[3] === 'number' ? params[3] : 0;
 
