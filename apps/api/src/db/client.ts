@@ -39,7 +39,21 @@ interface MockExoplanet {
 
 const mockUsers = new Map<string, MockUser>();
 const mockAchievements: MockAchievement[] = [];
-const mockExoplanets: MockExoplanet[] = (exoplanetsData as any[]).map((p) => ({
+const mockExoplanets: MockExoplanet[] = (exoplanetsData as unknown as Array<{
+  id: string;
+  name: string;
+  category: string;
+  type?: string;
+  distance?: number;
+  discoveryYear?: number;
+  method?: string;
+  mass?: number;
+  radius?: number;
+  habitabilityScore?: number;
+  temperature?: number;
+  star?: string;
+  description?: string;
+}>).map((p) => ({
   id: p.id,
   name: p.name,
   category: p.category,
