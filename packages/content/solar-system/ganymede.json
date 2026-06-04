@@ -9,9 +9,7 @@
   "semi_major_axis_au": 0.00716,
   "eccentricity": 0.0013,
   "inclination_deg": 0.2,
-  "textures": {
-    "diffuse": "ganymede_diffuse.basis"
-  },
+  "textures": {},
   "moons": [],
   "facts": {
     "source": "NASA Solar System Exploration",
