@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import * as THREE from 'three';
 import { createRenderer, createComposer } from '../engine/core/Renderer';
-import { initAssetManager } from '../engine/loaders/AssetManager';
+import { initAssetManager, loadTexture } from '../engine/loaders/AssetManager';
 import { createCameraController } from '../engine/core/Camera';
 import { createSceneGraph, SceneLayer } from '../engine/core/SceneGraph';
 import { startRenderLoop } from '../engine/core/RenderLoop';
@@ -49,6 +49,15 @@ export function useEngineInit(canvasRef: React.RefObject<HTMLCanvasElement | nul
     const renderer = createRenderer(canvas);
     initAssetManager(renderer);
     const sceneGraph = createSceneGraph();
+
+    // Load Milky Way background skybox
+    loadTexture('skybox/milkyway_8k.jpg').then((texture) => {
+      texture.mapping = THREE.EquirectangularReflectionMapping;
+      texture.colorSpace = THREE.SRGBColorSpace;
+      sceneGraph.scene.background = texture;
+    }).catch(err => {
+      console.warn('[EngineInit] Failed to load Milky Way skybox:', err);
+    });
 
     const width = canvas.clientWidth || window.innerWidth || 800;
     const height = canvas.clientHeight || window.innerHeight || 600;
