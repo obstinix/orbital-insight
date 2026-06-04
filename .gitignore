@@ -37,3 +37,9 @@ Thumbs.db
 .vite/
 .eslintcache
 .tsbuildinfo
+
+# Downloaded assets (fetched via asset pipeline)
+apps/web/public/textures/
+apps/web/public/stars/
+apps/web/public/constellations/
+packages/asset-pipeline/*.csv
