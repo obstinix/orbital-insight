@@ -59,7 +59,17 @@ export function createComposer(
   scene: THREE.Scene,
   camera: THREE.Camera
 ): EffectComposer {
-  const composer = new EffectComposer(renderer);
+  // Create a multisampled render target for hardware-accelerated antialiasing (MSAA 4x)
+  const size = renderer.getSize(new THREE.Vector2());
+  const renderTarget = new THREE.WebGLRenderTarget(size.x, size.y, {
+    minFilter: THREE.LinearFilter,
+    magFilter: THREE.LinearFilter,
+    format: THREE.RGBAFormat,
+    colorSpace: THREE.SRGBColorSpace,
+    samples: 4
+  });
+
+  const composer = new EffectComposer(renderer, renderTarget);
 
   // 1. Scene render pass
   const renderPass = new RenderPass(scene, camera);
