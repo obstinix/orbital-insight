@@ -19,6 +19,7 @@ import { SpacecraftTracker } from '../engine/bodies/SpacecraftTracker';
 import { SpecialEvents } from '../engine/bodies/SpecialEvents';
 import { AudioEngine } from '../engine/audio/AudioEngine';
 import { useEngineStore } from '../store/useEngineStore';
+import { SkyMapMode } from '../engine/modes/SkyMapMode';
 
 export function useEngineInit(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
   const isInitialized = useEngineStore((state) => state.isInitialized);
@@ -110,6 +111,8 @@ export function useEngineInit(canvasRef: React.RefObject<HTMLCanvasElement | nul
 
     const journeyMode = new JourneyMode(sceneGraph.scene, camera, spacecraft);
 
+    const skyMapMode = new SkyMapMode(sceneGraph.scene, camera, cameraController.controls);
+
     const handleExoplanetVisualUpdate = (e: Event) => {
       const customEvent = e as CustomEvent<{ category: string }>;
       exoplanetRenderer.setCategory(customEvent.detail.category);
@@ -163,8 +166,23 @@ export function useEngineInit(canvasRef: React.RefObject<HTMLCanvasElement | nul
       constellationLines.update(elapsedSeconds);
 
       // Toggle constellation lines based on state
-      const { latitude, longitude, showConstellations } = useConstellationStore.getState();
+      const { latitude, longitude, showConstellations, mode } = useConstellationStore.getState();
       constellationLines.group.visible = showConstellations;
+
+      // Toggle Sky Map mode and update it reactively
+      if (mode === 'skymap') {
+        if (!skyMapMode.isActive) {
+          if (cameraController.mode !== 'FREE_ROAM') {
+            cameraController.setMode('FREE_ROAM');
+          }
+          skyMapMode.enable();
+        }
+        skyMapMode.update();
+      } else {
+        if (skyMapMode.isActive) {
+          skyMapMode.disable();
+        }
+      }
 
       // Rotate sky sphere based on user coordinates and calculated Sidereal Time
       const now = new Date();
@@ -239,6 +257,7 @@ export function useEngineInit(canvasRef: React.RefObject<HTMLCanvasElement | nul
       }
       specialEvents.dispose();
       constellationLines.dispose();
+      skyMapMode.disable();
       exoplanetRenderer.dispose();
       audioEngine.dispose();
       composer.dispose();

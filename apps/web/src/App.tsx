@@ -8,6 +8,8 @@ import { ChapterSelector } from './ui/ChapterSelector';
 import { ErrorBoundary } from './ui/ErrorBoundary';
 import { useEngineInit } from './hooks/useEngineInit';
 import { GuideChatPanel } from './ui/GuideChatPanel';
+import { useConstellationStore } from './store/useConstellationStore';
+import { CompassRose } from './ui/CompassRose';
 
 // Lazy-loaded route panels for performance optimizations
 const ConstellationPanel = React.lazy(() => 
@@ -118,6 +120,8 @@ const TopHudStats: React.FC = () => {
   const isLowPerformance = usePerformanceStore((state) => state.isLowPerformance);
   const cameraController = useEngineStore((state) => state.cameraController);
   const activeMode = cameraController?.mode || 'FREE_ROAM';
+  const mode = useConstellationStore((state) => state.mode);
+  const setMode = useConstellationStore((state) => state.setMode);
 
   return (
     <div
@@ -128,6 +132,7 @@ const TopHudStats: React.FC = () => {
         left: 'var(--space-2)',
         zIndex: 'var(--z-hud)',
         display: 'flex',
+        alignItems: 'center',
         gap: 'var(--space-2)',
         fontFamily: 'var(--font-mono)',
         fontSize: '0.85rem',
@@ -144,6 +149,41 @@ const TopHudStats: React.FC = () => {
         FPS: {fps}
       </div>
       <div>CAMERA: {activeMode}</div>
+      <div style={{ borderLeft: '1px solid rgba(74, 144, 226, 0.2)', height: '14px', margin: '0 8px' }} />
+      <div style={{ display: 'flex', gap: '4px' }}>
+        <button
+          onClick={() => setMode('solar-system')}
+          style={{
+            background: mode === 'solar-system' ? 'var(--color-teal-cyan)' : 'transparent',
+            color: mode === 'solar-system' ? 'var(--color-void)' : 'var(--color-muted)',
+            border: 'none',
+            borderRadius: '2px',
+            fontSize: '0.75rem',
+            fontFamily: 'var(--font-mono)',
+            cursor: 'pointer',
+            padding: '2px 6px',
+            fontWeight: 'bold',
+          }}
+        >
+          ORBITAL VIEW
+        </button>
+        <button
+          onClick={() => setMode('skymap')}
+          style={{
+            background: mode === 'skymap' ? 'var(--color-teal-cyan)' : 'transparent',
+            color: mode === 'skymap' ? 'var(--color-void)' : 'var(--color-muted)',
+            border: 'none',
+            borderRadius: '2px',
+            fontSize: '0.75rem',
+            fontFamily: 'var(--font-mono)',
+            cursor: 'pointer',
+            padding: '2px 6px',
+            fontWeight: 'bold',
+          }}
+        >
+          SKY MAP VIEW
+        </button>
+      </div>
     </div>
   );
 };
@@ -385,6 +425,7 @@ function AppContent() {
       </ErrorBoundary>
       <AchievementToast />
       <AudioControls />
+      <CompassRose />
 
       {/* Keyboard shortcuts overlay */}
       <KeyboardShortcuts
