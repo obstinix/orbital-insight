@@ -10,6 +10,7 @@ import { useEngineInit } from './hooks/useEngineInit';
 import { GuideChatPanel } from './ui/GuideChatPanel';
 import { useConstellationStore } from './store/useConstellationStore';
 import { CompassRose } from './ui/CompassRose';
+import { Attribution } from './ui/Attribution';
 
 // Lazy-loaded route panels for performance optimizations
 const ConstellationPanel = React.lazy(() => 
@@ -426,6 +427,7 @@ function AppContent() {
       <AchievementToast />
       <AudioControls />
       <CompassRose />
+      <Attribution />
 
       {/* Keyboard shortcuts overlay */}
       <KeyboardShortcuts
