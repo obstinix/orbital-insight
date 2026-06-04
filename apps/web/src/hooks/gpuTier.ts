@@ -15,18 +15,23 @@ export function detectGpuTier(): GpuInfo {
     };
   }
 
-  const canvas = document.createElement('canvas');
-  const gl = (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')) as WebGLRenderingContext | null;
-  
   let renderer = 'Unknown';
   let vendor = 'Unknown';
-  
-  if (gl) {
-    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-    if (debugInfo) {
-      renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || '';
-      vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) || '';
+  let gl: WebGLRenderingContext | null = null;
+
+  try {
+    const canvas = document.createElement('canvas');
+    gl = (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')) as WebGLRenderingContext | null;
+    
+    if (gl) {
+      const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+      if (debugInfo) {
+        renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || '';
+        vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) || '';
+      }
     }
+  } catch (e) {
+    console.warn('[gpuTier] WebGL initialization or profiling failed:', e);
   }
 
   const isMobile = typeof navigator !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
