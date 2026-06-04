@@ -1,6 +1,6 @@
 import pg from 'pg';
 import { getEnv } from '../config/env.js';
-import exoplanetsData from '../../../../packages/content/exoplanets.json' assert { type: 'json' };
+import exoplanetsData from '../../../../packages/content/exoplanets.json' with { type: 'json' };
 
 const { Pool } = pg;
 
