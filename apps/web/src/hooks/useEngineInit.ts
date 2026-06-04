@@ -52,6 +52,7 @@ export function useEngineInit(canvasRef: React.RefObject<HTMLCanvasElement | nul
 
     const aspect = canvas.clientWidth / canvas.clientHeight;
     const camera = new THREE.PerspectiveCamera(60, aspect, 0.1, 20000);
+    camera.layers.enableAll();
     camera.position.set(0, 100, 350); // Set camera slightly higher and further back to see orbits
 
     // 1b. Initialize post-processing pipeline
