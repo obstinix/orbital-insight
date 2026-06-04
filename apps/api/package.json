@@ -8,6 +8,7 @@
     "build": "tsc",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit",
+    "seed:exoplanets": "tsx src/scripts/seed-exoplanets.ts",
     "test": "echo 'No tests yet in Phase 0'"
   },
   "dependencies": {
