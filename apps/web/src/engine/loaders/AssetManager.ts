@@ -11,11 +11,16 @@ const textureCache = new Map<string, THREE.Texture>();
 export function initAssetManager(renderer: THREE.WebGLRenderer): void {
   if (ktx2Loader) return;
 
-  ktx2Loader = new KTX2Loader();
-  // Using unpkg CDN as the transcoder path for standard three.js transcoder binaries
-  ktx2Loader.setTranscoderPath('https://unpkg.com/three@0.165.0/examples/jsm/libs/basis/');
-  ktx2Loader.detectSupport(renderer);
-  console.log('[AssetManager] KTX2Loader successfully initialized.');
+  try {
+    ktx2Loader = new KTX2Loader();
+    // Using unpkg CDN as the transcoder path for standard three.js transcoder binaries
+    ktx2Loader.setTranscoderPath('https://unpkg.com/three@0.165.0/examples/jsm/libs/basis/');
+    ktx2Loader.detectSupport(renderer);
+    console.log('[AssetManager] KTX2Loader successfully initialized.');
+  } catch (err) {
+    console.warn('[AssetManager] Failed to initialize KTX2Loader:', err);
+    ktx2Loader = null;
+  }
 }
 
 /**
@@ -145,12 +150,17 @@ export function loadTexture(path: string): Promise<THREE.Texture> {
         return;
       }
 
-      ktx2Loader.load(
-        fullUrl,
-        handleSuccess,
-        undefined,
-        handleFailure
-      );
+      try {
+        ktx2Loader.load(
+          fullUrl,
+          handleSuccess,
+          undefined,
+          handleFailure
+        );
+      } catch (err) {
+        console.error('[AssetManager] Error loading KTX2/Basis texture:', err);
+        resolve(createFallbackTexture(path));
+      }
     } else {
       const loader = new THREE.TextureLoader();
       loader.load(

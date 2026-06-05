@@ -35,9 +35,11 @@ interface MissionState {
   historicalMissions: HistoricalMission[];
   selectedMissionId: string | null;
   activeSpacecraft: 'ISS' | 'JWST' | 'HUBBLE';
+  showLagrangePoints: boolean;
   setIssTelemetry: (telemetry: Telemetry) => void;
   setSelectedMissionId: (id: string | null) => void;
   setActiveSpacecraft: (spacecraft: 'ISS' | 'JWST' | 'HUBBLE') => void;
+  setShowLagrangePoints: (show: boolean) => void;
 }
 
 export const useMissionStore = create<MissionState>((set) => ({
@@ -134,7 +136,9 @@ export const useMissionStore = create<MissionState>((set) => ({
   ] as HistoricalMission[],
   selectedMissionId: null,
   activeSpacecraft: 'ISS',
+  showLagrangePoints: false,
   setIssTelemetry: (issTelemetry) => set({ issTelemetry }),
   setSelectedMissionId: (selectedMissionId) => set({ selectedMissionId }),
   setActiveSpacecraft: (activeSpacecraft) => set({ activeSpacecraft }),
+  setShowLagrangePoints: (showLagrangePoints) => set({ showLagrangePoints }),
 }));

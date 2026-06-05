@@ -14,8 +14,7 @@
   },
   "ring": {
     "inner_radius_scale": 1.3,
-    "outer_radius_scale": 1.8,
-    "texture": "uranus_ring.basis"
+    "outer_radius_scale": 1.8
   },
   "atmosphere": {
     "radius_scale": 1.015,

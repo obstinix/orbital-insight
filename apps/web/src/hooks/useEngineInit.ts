@@ -22,6 +22,8 @@ import { useEngineStore } from '../store/useEngineStore';
 import { SkyMapMode } from '../engine/modes/SkyMapMode';
 import { detectGpuTier } from './gpuTier';
 import { usePerformanceStore } from '../store/usePerformanceStore';
+import { LagrangePoints } from '../engine/bodies/LagrangePoints';
+import { useMissionStore } from '../store/useMissionStore';
 
 export function useEngineInit(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
   const isInitialized = useEngineStore((state) => state.isInitialized);
@@ -99,6 +101,8 @@ export function useEngineInit(canvasRef: React.RefObject<HTMLCanvasElement | nul
     sceneGraph.addObject(solarSystem.group, SceneLayer.PLANETS);
 
     const earthPlanet = solarSystem.planets.find((p) => p.id === 'earth');
+    const moonPlanet = solarSystem.planets.find((p) => p.id === 'moon');
+
     let spacecraftTracker: SpacecraftTracker | null = null;
     if (earthPlanet) {
       spacecraftTracker = new SpacecraftTracker(
@@ -106,6 +110,18 @@ export function useEngineInit(canvasRef: React.RefObject<HTMLCanvasElement | nul
         earthPlanet.bodyMesh,
         sceneGraph.scene
       );
+    }
+
+    let lagrangePoints: LagrangePoints | null = null;
+    if (earthPlanet && moonPlanet) {
+      lagrangePoints = new LagrangePoints(
+        earthPlanet.group,
+        moonPlanet.group
+      );
+      sceneGraph.addObject(lagrangePoints.group, SceneLayer.PLANETS);
+      
+      const { showLagrangePoints } = useMissionStore.getState();
+      lagrangePoints.setVisible(showLagrangePoints);
     }
 
     const exoplanetRenderer = new ExoplanetRenderer();
@@ -166,6 +182,12 @@ export function useEngineInit(canvasRef: React.RefObject<HTMLCanvasElement | nul
 
       if (spacecraftTracker) {
         spacecraftTracker.update(elapsedSeconds);
+      }
+
+      if (lagrangePoints) {
+        lagrangePoints.update(elapsedSeconds);
+        const { showLagrangePoints } = useMissionStore.getState();
+        lagrangePoints.setVisible(showLagrangePoints);
       }
 
       specialEvents.update(elapsedSeconds, delta);
@@ -265,6 +287,9 @@ export function useEngineInit(canvasRef: React.RefObject<HTMLCanvasElement | nul
       spacecraft.dispose();
       if (spacecraftTracker) {
         spacecraftTracker.dispose();
+      }
+      if (lagrangePoints) {
+        lagrangePoints.dispose();
       }
       specialEvents.dispose();
       constellationLines.dispose();

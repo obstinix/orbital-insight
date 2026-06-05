@@ -1,4 +1,5 @@
 import React from 'react';
+import { useMissionStore } from '../store/useMissionStore';
 
 interface TelemetryTabProps {
   activeSpacecraft: 'ISS' | 'JWST' | 'HUBBLE';
@@ -22,6 +23,7 @@ export const TelemetryTab: React.FC<TelemetryTabProps> = ({
   telemetryPollError,
   onLockCamera,
 }) => {
+  const { showLagrangePoints, setShowLagrangePoints } = useMissionStore();
   return (
     <div
       role="tabpanel"
@@ -93,6 +95,34 @@ export const TelemetryTab: React.FC<TelemetryTabProps> = ({
           JWST
         </button>
       </div>
+
+      {/* Lagrange Points Toggle */}
+      <label
+        htmlFor="render-lagrange-checkbox"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          fontSize: '0.75rem',
+          color: '#fff',
+          cursor: 'pointer',
+          marginTop: '4px',
+          fontFamily: 'var(--font-mono)',
+          userSelect: 'none',
+        }}
+      >
+        <input
+          id="render-lagrange-checkbox"
+          type="checkbox"
+          checked={showLagrangePoints}
+          onChange={(e) => setShowLagrangePoints(e.target.checked)}
+          style={{
+            accentColor: 'var(--color-teal-cyan)',
+            cursor: 'pointer',
+          }}
+        />
+        RENDER LAGRANGE POINTS (L1-L5)
+      </label>
 
       {/* Telemetry Display */}
       {activeSpacecraft === 'ISS' && (
