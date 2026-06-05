@@ -1,8 +1,9 @@
 /// <reference types="vite/client" />
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import App from './App';
 import * as Sentry from '@sentry/react';
+import { EngineErrorBoundary } from './components/EngineErrorBoundary';
 
 const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
 if (sentryDsn) {
@@ -33,9 +34,18 @@ if (missing.length) {
   throw new Error(`Missing required env vars: ${missing.join(', ')}`);
 }
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+const rootEl = document.getElementById('root');
+if (!rootEl) {
+  document.body.style.cssText = 'margin:0;background:#050510;height:100vh;display:flex;align-items:center;justify-content:center;font-family:monospace;color:red';
+  document.body.innerHTML = '<div style="padding:2rem;border:1px solid red;border-radius:8px"><h2>❌ #root element not found</h2><p>Check apps/web/index.html — it must contain &lt;div id="root"&gt;&lt;/div&gt;</p></div>';
+  throw new Error('Root element #root not found in DOM');
+}
+
+createRoot(rootEl).render(
   <React.StrictMode>
-    <App />
+    <EngineErrorBoundary>
+      <App />
+    </EngineErrorBoundary>
   </React.StrictMode>
 );
 
@@ -51,4 +61,3 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
       });
   });
 }
-

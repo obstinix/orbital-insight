@@ -43,3 +43,10 @@ apps/web/public/textures/
 apps/web/public/stars/
 apps/web/public/constellations/
 packages/asset-pipeline/*.csv
+
+# Temporary scratch directory and prompt files
+scratch/
+PRD_text.txt
+full_initial_prompt.md
+initial_prompt.md
+

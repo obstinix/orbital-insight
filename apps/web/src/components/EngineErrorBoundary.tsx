@@ -1,44 +1,76 @@
-import { Component, ReactNode } from 'react';
+import { Component, ReactNode } from 'react'
 
 interface Props { children: ReactNode; fallbackName?: string }
-interface State { error: Error | null }
+interface State { error: Error | null; info: string }
 
 export class EngineErrorBoundary extends Component<Props, State> {
-  override state: State = { error: null };
+  state: State = { error: null, info: '' }
 
   static getDerivedStateFromError(error: Error): State {
-    return { error };
+    return { error, info: '' }
   }
 
-  override render() {
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error('[EngineErrorBoundary] Caught error:', error)
+    console.error('[EngineErrorBoundary] Component stack:', info.componentStack)
+    this.setState({ info: info.componentStack ?? '' })
+  }
+
+  render() {
     if (this.state.error) {
       return (
         <div style={{
           position: 'fixed', inset: 0,
-          background: '#0a0a0f',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: '#050510',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
           fontFamily: 'monospace', color: '#ff6b6b',
-          flexDirection: 'column', gap: '1rem', padding: '2rem',
-          textAlign: 'center'
+          padding: '2rem', gap: '1.5rem',
+          textAlign: 'center',
         }}>
-          <div style={{ fontSize: '3rem' }}>🌌</div>
-          <h2 style={{ margin: 0 }}>{this.props.fallbackName ?? '3D Engine'} failed to initialize</h2>
-          <pre style={{ color: '#ffa07a', maxWidth: '600px', whiteSpace: 'pre-wrap', fontSize: '12px' }}>
+          <div style={{ fontSize: '2.5rem' }}>🌌</div>
+          <h2 style={{ margin: 0, fontSize: '1.2rem' }}>Engine crashed before first render</h2>
+          <pre style={{
+            background: '#0a0a1a',
+            padding: '1.5rem',
+            borderRadius: '8px',
+            border: '1px solid #ff6b6b44',
+            maxWidth: '700px',
+            width: '100%',
+            textAlign: 'left',
+            fontSize: '12px',
+            color: '#ffaaaa',
+            overflowX: 'auto',
+            whiteSpace: 'pre-wrap',
+          }}>
             {this.state.error.message}
+            {'\n\n'}
+            {this.state.error.stack?.split('\n').slice(0,8).join('\n')}
           </pre>
-          <p style={{ color: '#666', fontSize: '13px' }}>
-            Check DevTools console (F12) for the full stack trace.
-            <br />Common fixes: enable hardware acceleration in your browser, or try a different browser.
-          </p>
+          <details style={{ maxWidth: '700px', width: '100%', color: '#666' }}>
+            <summary style={{ cursor: 'pointer', color: '#8888aa', fontSize: '12px' }}>Component stack</summary>
+            <pre style={{ fontSize: '11px', marginTop: '0.5rem', textAlign: 'left', whiteSpace: 'pre-wrap' }}>
+              {this.state.info}
+            </pre>
+          </details>
           <button
-            onClick={() => this.setState({ error: null })}
-            style={{ padding: '8px 20px', background: 'transparent', border: '1px solid #ff6b6b', color: '#ff6b6b', borderRadius: '6px', cursor: 'pointer', marginTop: '0.5rem' }}
+            onClick={() => window.location.reload()}
+            style={{
+              padding: '8px 24px',
+              background: 'transparent',
+              border: '1px solid #ff6b6b',
+              color: '#ff6b6b',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontFamily: 'monospace',
+              fontSize: '13px',
+            }}
           >
-            Retry
+            Reload
           </button>
         </div>
-      );
+      )
     }
-    return this.props.children;
+    return this.props.children
   }
 }
