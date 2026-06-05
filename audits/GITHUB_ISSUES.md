@@ -317,7 +317,7 @@ There is no `.github/` directory. No automated quality gates exist.
 
 ---
 
-### ISSUE-015: Add Contributing Guide and Local Development README
+### ISSUE-015: [RESOLVED] Add Contributing Guide and Local Development README
 
 **Title:** `[DOCS] Create CONTRIBUTING.md and expand README with full local setup guide`
 
@@ -331,7 +331,7 @@ There is no `.github/` directory. No automated quality gates exist.
 
 ---
 
-### ISSUE-016: Document GLSL Shader Architecture
+### ISSUE-016: [RESOLVED] Document GLSL Shader Architecture
 
 **Title:** `[DOCS] Add shader documentation for all 7 custom GLSL programs`
 
