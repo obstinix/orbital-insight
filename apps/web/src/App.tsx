@@ -340,6 +340,98 @@ const PanelLoader: React.FC = () => {
 
 // ── ROOT APP ENTRY ───────────────────────────────────────────────
 
+function MockAppContent() {
+  const setSelectedPlanetId = usePlanetStore((state) => state.setSelectedPlanetId);
+  const currentChapterId = useJourneyStore((state) => state.currentChapterId);
+  const { isShortcutsPanelOpen, setShortcutsPanelOpen } = useKeyboardShortcuts();
+  const [showLandingHero, setShowLandingHero] = useState(
+    () => typeof window !== 'undefined' && localStorage.getItem('orbital_insight_visited') !== 'true'
+  );
+
+  const handleHeroComplete = useCallback(() => {
+    setShowLandingHero(false);
+  }, []);
+
+  // Monitor chapter milestones for achievements
+  useEffect(() => {
+    if (currentChapterId === 1) {
+      useAchievementStore.getState().unlock('journey_start');
+    } else if (currentChapterId === 5) {
+      useAchievementStore.getState().unlock('journey_voyager');
+    } else if (currentChapterId === 8) {
+      useAchievementStore.getState().unlock('journey_complete');
+    }
+  }, [currentChapterId]);
+
+  useEffect(() => {
+    const handleSelection = (e: Event) => {
+      const customEvent = e as CustomEvent<{ planetId: string }>;
+      const planetId = customEvent.detail.planetId;
+      setSelectedPlanetId(planetId);
+
+      // Focus camera on Selected Planet in Orbit mode
+      const engine = useEngineStore.getState();
+      const planetObj = engine.scene?.getObjectByName(`planet_group_${planetId}`);
+      if (planetObj && engine.cameraController) {
+        engine.cameraController.setOrbitTarget(planetObj);
+        engine.cameraController.setMode('ORBIT');
+      }
+    };
+
+    window.addEventListener('celestialBodySelected', handleSelection);
+    return () => {
+      window.removeEventListener('celestialBodySelected', handleSelection);
+    };
+  }, [setSelectedPlanetId]);
+
+  return (
+    <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
+      {/* Core 3D engine canvas - persists across routes */}
+      <ErrorBoundary name="3D Engine">
+        <ThreeCanvas />
+      </ErrorBoundary>
+
+      {/* Global HUD Layout components */}
+      <TopHudStats />
+      <LeftNavigationPanel />
+      <ErrorBoundary name="Info Panel">
+        <InfoPanel />
+      </ErrorBoundary>
+      <TimeControls />
+      <ErrorBoundary name="Guide Chat Panel">
+        <GuideChatPanel />
+      </ErrorBoundary>
+      <AchievementToast />
+      <AudioControls />
+      <CompassRose />
+      <Attribution />
+
+      {/* Keyboard shortcuts overlay */}
+      <KeyboardShortcuts
+        isOpen={isShortcutsPanelOpen}
+        onClose={() => setShortcutsPanelOpen(false)}
+      />
+
+      {/* Router-controlled HUD overlays wrapped in dynamic loader */}
+      <ErrorBoundary name="HUD Panels">
+        <React.Suspense fallback={<PanelLoader />}>
+          <Routes>
+            <Route path="/" element={<UniverseView />} />
+            <Route path="/journey" element={<ChapterSelector />} />
+            <Route path="/constellations" element={<ConstellationPanel />} />
+            <Route path="/exoplanets" element={<ExoplanetPanel />} />
+            <Route path="/missions" element={<MissionsPanel />} />
+            <Route path="/achievements" element={<AchievementsPanel />} />
+          </Routes>
+        </React.Suspense>
+      </ErrorBoundary>
+
+      {/* Cinematic landing hero — first visit only */}
+      {showLandingHero && <LandingHero onComplete={handleHeroComplete} />}
+    </div>
+  );
+}
+
 // Inner component that lives inside the Router context so hooks like
 // useNavigate (used by useKeyboardShortcuts) work correctly.
 function AppContent() {
@@ -456,13 +548,21 @@ function AppContent() {
 }
 
 export default function App() {
-  const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || 'pk_test_bW9jay1jbGVyay1rZXktOTkuY2xlcmsuYWNjb3VudHMuZGV2JA';
+  const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+  if (clerkPubKey) {
+    return (
+      <ClerkProvider publishableKey={clerkPubKey}>
+        <HashRouter>
+          <AppContent />
+        </HashRouter>
+      </ClerkProvider>
+    );
+  }
 
   return (
-    <ClerkProvider publishableKey={clerkPubKey}>
-      <HashRouter>
-        <AppContent />
-      </HashRouter>
-    </ClerkProvider>
+    <HashRouter>
+      <MockAppContent />
+    </HashRouter>
   );
 }
