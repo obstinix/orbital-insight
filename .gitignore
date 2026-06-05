@@ -46,7 +46,9 @@ packages/asset-pipeline/*.csv
 
 # Temporary scratch directory and prompt files
 scratch/
+audits/
 PRD_text.txt
 full_initial_prompt.md
 initial_prompt.md
+
 
