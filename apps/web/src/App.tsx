@@ -38,6 +38,7 @@ import { useEngineStore } from './store/useEngineStore';
 import { usePerformanceStore } from './store/usePerformanceStore';
 import { useAccountStore } from './store/useAccountStore';
 import './styles/tokens.css';
+import './styles/fonts.css';
 
 // ── PERSISTENT CANVAS CONTAINER ──────────────────────────────────
 const ThreeCanvas: React.FC = () => {
