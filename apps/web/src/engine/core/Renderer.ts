@@ -18,6 +18,18 @@ export function createRenderer(canvas: HTMLCanvasElement): THREE.WebGLRenderer {
   const isWebGPUSupported = typeof navigator !== 'undefined' && 'gpu' in navigator;
   console.log(`[Renderer] WebGPU support: ${isWebGPUSupported ? 'Available' : 'Unavailable'}. Using WebGL 2.0 Renderer.`);
 
+  // WebGL availability check
+  const testCanvas = document.createElement('canvas');
+  const gl = testCanvas.getContext('webgl2') || testCanvas.getContext('webgl');
+  if (!gl) {
+    throw new Error(
+      'WebGL is not available in your browser.\n' +
+      'Please enable hardware acceleration:\n' +
+      'Chrome: Settings → System → Use hardware acceleration\n' +
+      'Firefox: about:config → webgl.disabled = false'
+    );
+  }
+
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: true,

@@ -181,49 +181,39 @@ User enters → Warp jump sequence → Explore solar system → Click on Mars
 
 ---
 
-## 🏁 Getting Started
-
-### Prerequisites
+## ⚡ Quick Start (zero credentials required)
 
 ```bash
-node >= 22.0.0
-npm  >= 10.0.0
-git  >= 2.40.0
-```
-
-> **GPU Note:** A dedicated GPU with WebGL 2.0 support is strongly recommended. The 3D engine will auto-detect capability and activate a lightweight fallback on integrated/low-end graphics.
-
-### Installation
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/your-org/orbital-insight.git
+# 1. Clone
+git clone https://github.com/obstinix/orbital-insight.git
 cd orbital-insight
 
-# 2. Install all dependencies (monorepo — installs frontend + backend)
+# 2. Install
 npm install
 
-# 3. Copy environment variables
+# 3. Create env file (no real keys needed)
 cp .env.example .env.local
+# .env.local is pre-configured for mock mode — no edits needed
 
-# 4. Fill in your API keys (see Environment Variables section)
-nano .env.local
-
-# 5. Start the development server
+# 4. Run
 npm run dev
 ```
 
-The app will be available at **`http://localhost:5173`**  
-The API server runs at **`http://localhost:3000`**
+The app runs at **http://localhost:5173** (API backend at **http://localhost:3000**) with:
+- 🌌 Full 3D solar system (Three.js, real planet textures from solarsystemscope.com)
+- 🤖 AI guide using built-in canned responses (or Ollama if installed locally)
+- 🔊 Text-to-speech via browser Web Speech API
+- 💾 Achievements & mission log saved to localStorage
+- 🌐 Planet data from NASA DEMO_KEY (no signup, 30 req/hour)
 
-### Quick Start (Frontend only, no API keys needed)
-
+### Optional: enable real AI narration (still free)
 ```bash
-# Run with mock data — no external API keys required
-npm run dev:mock
+# Install Ollama (free, local, open-source)
+# Mac/Linux: curl -fsSL https://ollama.com/install.sh | sh
+# Windows: download from https://ollama.com
+ollama pull llama3.2   # ~2GB download
+# That's it — the app auto-detects Ollama at localhost:11434
 ```
-
-This loads a static snapshot of NASA data and uses a stubbed AI guide, perfect for UI development without API credentials.
 
 ---
 

@@ -11,6 +11,7 @@ import { GuideChatPanel } from './ui/GuideChatPanel';
 import { useConstellationStore } from './store/useConstellationStore';
 import { CompassRose } from './ui/CompassRose';
 import { Attribution } from './ui/Attribution';
+import { EngineErrorBoundary } from './components/EngineErrorBoundary';
 
 // Lazy-loaded route panels for performance optimizations
 const ConstellationPanel = React.lazy(() => 
@@ -387,9 +388,9 @@ function MockAppContent() {
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
       {/* Core 3D engine canvas - persists across routes */}
-      <ErrorBoundary name="3D Engine">
+      <EngineErrorBoundary fallbackName="Universe Engine">
         <ThreeCanvas />
-      </ErrorBoundary>
+      </EngineErrorBoundary>
 
       {/* Global HUD Layout components */}
       <TopHudStats />
@@ -502,9 +503,9 @@ function AppContent() {
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
       {/* Core 3D engine canvas - persists across routes */}
-      <ErrorBoundary name="3D Engine">
+      <EngineErrorBoundary fallbackName="Universe Engine">
         <ThreeCanvas />
-      </ErrorBoundary>
+      </EngineErrorBoundary>
 
       {/* Global HUD Layout components */}
       <TopHudStats />
@@ -547,22 +548,103 @@ function AppContent() {
   );
 }
 
+function LoadingSplash({ progress }: { progress: number }) {
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      background: '#000008',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: '"Courier New", monospace',
+      color: '#fff',
+      gap: '2rem',
+      zIndex: 9999,
+    }}>
+      {/* Animated star field using CSS */}
+      <style>{`
+        @keyframes twinkle { 0%,100%{opacity:0.2} 50%{opacity:1} }
+        .star { position:absolute; width:2px; height:2px; background:#fff; border-radius:50%; animation:twinkle var(--d,2s) infinite; }
+      `}</style>
+      {Array.from({ length: 60 }, (_, i) => (
+        <div key={i} className="star" style={{
+          left: `${Math.random() * 100}%`,
+          top: `${Math.random() * 100}%`,
+          ['--d' as string]: `${1 + Math.random() * 3}s`,
+          opacity: Math.random(),
+          width: Math.random() > 0.8 ? '3px' : '1px',
+          height: Math.random() > 0.8 ? '3px' : '1px',
+        }} />
+      ))}
+
+      <div style={{ fontSize: 'clamp(1.5rem,4vw,3rem)', fontWeight: 300, letterSpacing: '0.3em', textTransform: 'uppercase' }}>
+        Orbital Insight
+      </div>
+      <div style={{ fontSize: '0.8rem', letterSpacing: '0.2em', color: '#8888aa' }}>
+        Initializing universe engine...
+      </div>
+
+      {/* Progress bar */}
+      <div style={{ width: 'min(400px, 80vw)', height: '1px', background: '#111133', borderRadius: '1px' }}>
+        <div style={{
+          height: '100%',
+          borderRadius: '1px',
+          background: 'linear-gradient(90deg, #3344ff, #88aaff)',
+          width: `${progress}%`,
+          transition: 'width 0.3s ease',
+          boxShadow: '0 0 8px #3344ff',
+        }} />
+      </div>
+      <div style={{ fontSize: '0.7rem', color: '#444466', letterSpacing: '0.15em' }}>
+        {progress < 100 ? `${Math.round(progress)}%` : 'Ready'}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
+  const [engineReady, setEngineReady] = useState(false);
+  const [loadProgress, setLoadProgress] = useState(0);
+
+  useEffect(() => {
+    let p = 0;
+    const interval = setInterval(() => {
+      p += Math.random() * 15;
+      if (p >= 100) {
+        p = 100;
+        clearInterval(interval);
+        setTimeout(() => setEngineReady(true), 400);
+      }
+      setLoadProgress(p);
+    }, 200);
+    return () => clearInterval(interval);
+  }, []);
+
   const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
-  if (clerkPubKey) {
+  const renderContent = () => {
+    if (clerkPubKey) {
+      return (
+        <ClerkProvider publishableKey={clerkPubKey}>
+          <HashRouter>
+            <AppContent />
+          </HashRouter>
+        </ClerkProvider>
+      );
+    }
     return (
-      <ClerkProvider publishableKey={clerkPubKey}>
-        <HashRouter>
-          <AppContent />
-        </HashRouter>
-      </ClerkProvider>
+      <HashRouter>
+        <MockAppContent />
+      </HashRouter>
     );
-  }
+  };
 
   return (
-    <HashRouter>
-      <MockAppContent />
-    </HashRouter>
+    <>
+      {!engineReady && <LoadingSplash progress={loadProgress} />}
+      {renderContent()}
+    </>
   );
 }

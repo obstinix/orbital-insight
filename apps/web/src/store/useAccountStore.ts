@@ -95,6 +95,7 @@ export const useAccountStore = create<AccountState>()(
         set({ authToken: token });
       },
       fetchProfile: async (token) => {
+        if (import.meta.env.VITE_USE_MOCK === 'true') return;
         const activeToken = token || get().authToken;
         if (!activeToken) return;
         const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -136,6 +137,7 @@ export const useAccountStore = create<AccountState>()(
         }
       },
       saveProfile: async (token) => {
+        if (import.meta.env.VITE_USE_MOCK === 'true') return;
         const activeToken = token || get().authToken;
         if (!activeToken) return;
         const API_BASE = import.meta.env.VITE_API_URL || '';

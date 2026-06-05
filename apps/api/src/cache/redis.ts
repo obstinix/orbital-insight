@@ -37,7 +37,7 @@ let isMock = true;
 
 const env = getEnv();
 
-if (env.REDIS_URL) {
+if (env.REDIS_URL && env.REDIS_URL !== 'stub') {
   try {
     redisClient = createClient({ url: env.REDIS_URL });
     

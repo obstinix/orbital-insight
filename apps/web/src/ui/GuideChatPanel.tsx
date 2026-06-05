@@ -3,6 +3,7 @@ import { usePlanetStore } from '../store/usePlanetStore';
 import { askAIGuide, GuideMessage } from '../spacecraft/AIGuide';
 import { useAudioStore } from '../store/useAudioStore';
 import { Howl } from 'howler';
+import { speak, stopSpeaking } from '../lib/tts';
 
 export const GuideChatPanel: React.FC = () => {
   const selectedPlanetId = usePlanetStore((state) => state.selectedPlanetId) || 'earth';
@@ -44,48 +45,9 @@ export const GuideChatPanel: React.FC = () => {
           .trim();
 
         if (speakText) {
-          const playVoiceStream = async () => {
-            const API_BASE = import.meta.env.VITE_API_URL || '';
-            try {
-              const voiceRes = await fetch(`${API_BASE}/api/guide/voice`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ text: speakText }),
-              });
-
-              if (voiceRes.ok) {
-                const audioBlob = await voiceRes.blob();
-                const audioUrl = URL.createObjectURL(audioBlob);
-
-                const sound = new Howl({
-                  src: [audioUrl],
-                  format: ['mp3'],
-                  html5: true,
-                  volume: masterVolume * voiceVolume,
-                  onend: () => {
-                    URL.revokeObjectURL(audioUrl);
-                    if (activeVoiceRef.current === sound) {
-                      activeVoiceRef.current = null;
-                    }
-                  },
-                  onloaderror: () => {
-                    URL.revokeObjectURL(audioUrl);
-                  }
-                });
-
-                if (activeVoiceRef.current) {
-                  activeVoiceRef.current.unload();
-                }
-                activeVoiceRef.current = sound;
-                sound.play();
-              }
-            } catch (err) {
-              console.error('[Voice] Failed to play ElevenLabs speech:', err);
-            }
-          };
-          playVoiceStream();
+          speak(speakText, {
+            volume: masterVolume * voiceVolume,
+          });
         }
       }
     };
@@ -103,6 +65,7 @@ export const GuideChatPanel: React.FC = () => {
       activeVoiceRef.current.unload();
       activeVoiceRef.current = null;
     }
+    stopSpeaking();
 
     // 1. Add User Message
     const userMsg: GuideMessage = {
@@ -143,45 +106,9 @@ export const GuideChatPanel: React.FC = () => {
             .trim();
 
           if (speakText) {
-            const playVoiceStream = async () => {
-              const API_BASE = import.meta.env.VITE_API_URL || '';
-              try {
-                const voiceRes = await fetch(`${API_BASE}/api/guide/voice`, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({ text: speakText }),
-                });
-
-                if (voiceRes.ok) {
-                  const audioBlob = await voiceRes.blob();
-                  const audioUrl = URL.createObjectURL(audioBlob);
-
-                  const sound = new Howl({
-                    src: [audioUrl],
-                    format: ['mp3'],
-                    html5: true, // required to play object URLs cleanly
-                    volume: masterVolume * voiceVolume,
-                    onend: () => {
-                      URL.revokeObjectURL(audioUrl);
-                      if (activeVoiceRef.current === sound) {
-                        activeVoiceRef.current = null;
-                      }
-                    },
-                    onloaderror: () => {
-                      URL.revokeObjectURL(audioUrl);
-                    }
-                  });
-
-                  activeVoiceRef.current = sound;
-                  sound.play();
-                }
-              } catch (err) {
-                console.error('[Voice] Failed to play ElevenLabs speech:', err);
-              }
-            };
-            playVoiceStream();
+            speak(speakText, {
+              volume: masterVolume * voiceVolume,
+            });
           }
         }
       },
@@ -299,9 +226,12 @@ export const GuideChatPanel: React.FC = () => {
             const currentVoiceEnabled = useAudioStore.getState().isVoiceEnabled;
             useAudioStore.getState().toggleVoice();
             setVoiceEnabled(!currentVoiceEnabled);
-            if (currentVoiceEnabled && activeVoiceRef.current) {
-              activeVoiceRef.current.unload();
-              activeVoiceRef.current = null;
+            if (currentVoiceEnabled) {
+              if (activeVoiceRef.current) {
+                activeVoiceRef.current.unload();
+                activeVoiceRef.current = null;
+              }
+              stopSpeaking();
             }
           }}
           aria-label={voiceEnabled ? 'Mute voice narration' : 'Unmute voice narration'}

@@ -20,6 +20,19 @@ if (sentryDsn) {
   console.log('[Sentry] Web SDK Initialized.');
 }
 
+const required = ['VITE_API_URL', 'VITE_ENV'];
+const missing = required.filter(k => !import.meta.env[k]);
+if (missing.length) {
+  document.body.style.cssText = 'margin:0;background:#0a0a0f;display:flex;align-items:center;justify-content:center;height:100vh;font-family:monospace';
+  document.body.innerHTML = `<div style="color:#ff6b6b;max-width:500px;padding:2rem;border:1px solid #ff6b6b;border-radius:8px">
+    <h2 style="margin:0 0 1rem">⚠ Missing environment variables</h2>
+    <p>Create <code>apps/web/.env.local</code> and set:</p>
+    <pre style="color:#ffa07a">${missing.join('\n')}</pre>
+    <p style="margin-top:1rem;color:#888">See .env.example for all variables.</p>
+  </div>`;
+  throw new Error(`Missing required env vars: ${missing.join(', ')}`);
+}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />

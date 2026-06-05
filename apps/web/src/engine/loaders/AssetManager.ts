@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { KTX2Loader } from 'three/examples/jsm/loaders/KTX2Loader.js';
+import { assetUrl } from '../../lib/assetResolver';
 
 let ktx2Loader: KTX2Loader | null = null;
 const textureCache = new Map<string, THREE.Texture>();
@@ -116,17 +117,7 @@ export function loadTexture(path: string): Promise<THREE.Texture> {
     return Promise.resolve(textureCache.get(path)!);
   }
 
-  // Resolve URL: use CDN if configured, otherwise load from local /textures/ dir
-  // In dev mode, Vite serves public/ at root, so /textures/earth/earth_day_8k.jpg works
-  const cdnBase = import.meta.env.VITE_CDN_BASE_URL || '';
-  let fullUrl: string;
-  if (path.startsWith('http')) {
-    fullUrl = path;
-  } else if (cdnBase) {
-    fullUrl = `${cdnBase}/textures/${path}`;
-  } else {
-    fullUrl = `/textures/${path}`;
-  }
+  const fullUrl = assetUrl(path, 'texture');
 
   return new Promise((resolve) => {
     const handleSuccess = (texture: THREE.Texture) => {
@@ -195,7 +186,7 @@ export function getGLTFLoader(): GLTFLoader {
  */
 export function loadModel(path: string): Promise<THREE.Group> {
   const loader = getGLTFLoader();
-  const fullUrl = path.startsWith('http') ? path : `/models/${path}`;
+  const fullUrl = assetUrl(path, 'model');
 
   return new Promise((resolve, reject) => {
     loader.load(

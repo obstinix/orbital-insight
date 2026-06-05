@@ -90,7 +90,7 @@ let isMock = true;
 
 const env = getEnv();
 
-if (env.DATABASE_URL) {
+if (env.DATABASE_URL && env.DATABASE_URL !== 'stub') {
   try {
     pool = new Pool({
       connectionString: env.DATABASE_URL,
