@@ -117,6 +117,14 @@ const DEFAULT_ACHIEVEMENTS: Achievement[] = [
     unlockedAt: null,
   },
   {
+    id: 'event_cme',
+    title: 'Solar Flare',
+    description: 'Triggered a coronal mass ejection solar storm.',
+    icon: '🌞',
+    xpAward: 100,
+    unlockedAt: null,
+  },
+  {
     id: 'time_warp',
     title: 'Time Lord',
     description: 'Accelerated simulation time warp to maximum speed.',

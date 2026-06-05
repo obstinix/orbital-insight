@@ -6,20 +6,24 @@ interface EventState {
   isSupernovaActive: boolean;
   isEclipseActive: boolean;
   isCometActive: boolean;
+  isCMEActive: boolean;
   
   // Timers or status readouts
   supernovaTimer: number; // 0 to 1
   cometTimer: number; // 0 to 1
   eclipseTimer: number; // 0 to 1
+  cmeTimer: number; // 0 to 1
 
   triggerMeteorShower: (active: boolean) => void;
   triggerSupernova: () => void;
   triggerEclipse: (active: boolean) => void;
   triggerComet: () => void;
+  triggerCME: () => void;
 
   setSupernovaTimer: (t: number) => void;
   setCometTimer: (t: number) => void;
   setEclipseTimer: (t: number) => void;
+  setCMETimer: (t: number) => void;
 }
 
 export const useEventStore = create<EventState>((set, get) => ({
@@ -27,10 +31,12 @@ export const useEventStore = create<EventState>((set, get) => ({
   isSupernovaActive: false,
   isEclipseActive: false,
   isCometActive: false,
+  isCMEActive: false,
   
   supernovaTimer: 0,
   cometTimer: 0,
   eclipseTimer: 0,
+  cmeTimer: 0,
 
   triggerMeteorShower: (active) => {
     set({ isMeteorActive: active });
@@ -68,7 +74,21 @@ export const useEventStore = create<EventState>((set, get) => ({
     }, 12000);
   },
 
+  triggerCME: () => {
+    if (get().isCMEActive) return;
+    set({ isCMEActive: true, cmeTimer: 0 });
+    
+    // Unlock solar storm achievement if it exists, or just trigger event
+    useAchievementStore.getState().unlock('event_cme');
+
+    // Automatically reset after 8 seconds (duration of CME blast)
+    setTimeout(() => {
+      set({ isCMEActive: false, cmeTimer: 0 });
+    }, 8000);
+  },
+
   setSupernovaTimer: (supernovaTimer) => set({ supernovaTimer }),
   setCometTimer: (cometTimer) => set({ cometTimer }),
   setEclipseTimer: (eclipseTimer) => set({ eclipseTimer }),
+  setCMETimer: (cmeTimer) => set({ cmeTimer }),
 }));

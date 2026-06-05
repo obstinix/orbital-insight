@@ -165,7 +165,7 @@
 **Files Affected:** `apps/api/src/routes/ephemeris.ts` (new), `apps/web/src/store/usePlanetStore.ts`  
 **Priority:** P2
 
-### T-025: Lagrange Point Visualization
+### T-025: [COMPLETED] Lagrange Point Visualization
 **Description:** Render L1, L2, L3, L4, L5 Lagrange points for Earth-Sun and Earth-Moon systems as toggleable markers in the solar system view.  
 **Estimated Effort:** 2 days  
 **Files Affected:** `apps/web/src/engine/bodies/SolarSystem.ts`, new `apps/web/src/engine/bodies/LagrangePoints.ts`  

@@ -24,6 +24,8 @@ import { detectGpuTier } from './gpuTier';
 import { usePerformanceStore } from '../store/usePerformanceStore';
 import { LagrangePoints } from '../engine/bodies/LagrangePoints';
 import { useMissionStore } from '../store/useMissionStore';
+import { SolarCME } from '../engine/bodies/SolarCME';
+import { useEventStore } from '../store/useEventStore';
 
 export function useEngineInit(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
   const isInitialized = useEngineStore((state) => state.isInitialized);
@@ -128,6 +130,9 @@ export function useEngineInit(canvasRef: React.RefObject<HTMLCanvasElement | nul
     sceneGraph.addObject(exoplanetRenderer.mesh, SceneLayer.PLANETS);
     exoplanetRenderer.mesh.visible = false;
 
+    const solarCME = new SolarCME();
+    sceneGraph.addObject(solarCME.group, SceneLayer.PLANETS);
+
     const specialEvents = new SpecialEvents(sceneGraph.scene, solarSystem.planets);
 
     const audioEngine = new AudioEngine();
@@ -162,6 +167,7 @@ export function useEngineInit(canvasRef: React.RefObject<HTMLCanvasElement | nul
 
     // 4. Run loop
     let elapsedSeconds = 0;
+    let lastCMEActive = false;
     const loop = startRenderLoop(renderer, sceneGraph.scene, camera, composer, (delta) => {
       elapsedSeconds += delta;
 
@@ -189,6 +195,14 @@ export function useEngineInit(canvasRef: React.RefObject<HTMLCanvasElement | nul
         const { showLagrangePoints } = useMissionStore.getState();
         lagrangePoints.setVisible(showLagrangePoints);
       }
+
+      // Update Solar CME particle bursts
+      const { isCMEActive } = useEventStore.getState();
+      if (isCMEActive && !lastCMEActive) {
+        solarCME.trigger();
+      }
+      lastCMEActive = isCMEActive;
+      solarCME.update(delta);
 
       specialEvents.update(elapsedSeconds, delta);
 
@@ -291,6 +305,7 @@ export function useEngineInit(canvasRef: React.RefObject<HTMLCanvasElement | nul
       if (lagrangePoints) {
         lagrangePoints.dispose();
       }
+      solarCME.dispose();
       specialEvents.dispose();
       constellationLines.dispose();
       skyMapMode.disable();

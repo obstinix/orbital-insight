@@ -28,10 +28,12 @@ export const TimeControls: React.FC = () => {
     isSupernovaActive,
     isEclipseActive,
     isCometActive,
+    isCMEActive,
     triggerMeteorShower,
     triggerSupernova,
     triggerEclipse,
     triggerComet,
+    triggerCME,
   } = useEventStore();
 
   const [showEventDrawer, setShowEventDrawer] = useState(false);
@@ -113,6 +115,16 @@ export const TimeControls: React.FC = () => {
             style={eventBtnStyle(isEclipseActive, '#ffaa00')}
           >
             🌑 ECLIPSE ALIGN: {isEclipseActive ? 'ON' : 'OFF'}
+          </button>
+
+          {/* Solar CME Button */}
+          <button
+            onClick={triggerCME}
+            disabled={isCMEActive}
+            aria-label="Trigger Coronal Mass Ejection solar storm"
+            style={eventBtnStyle(isCMEActive, '#ff6600')}
+          >
+            🌞 SOLAR CME
           </button>
 
           {/* Supernova Button */}
@@ -260,17 +272,24 @@ export const TimeControls: React.FC = () => {
   );
 };
 
-const eventBtnStyle = (active: boolean, color: string): React.CSSProperties => ({
-  background: active ? `rgba(${color === '#ff3366' ? '255, 51, 102' : color === '#ffaa00' ? '255, 170, 0' : '0, 240, 255'}, 0.25)` : 'rgba(5, 8, 16, 0.5)',
-  border: `1.5px solid ${color}`,
-  color: color,
-  padding: '0.4rem 0.8rem',
-  borderRadius: '4px',
-  fontSize: '0.7rem',
-  cursor: 'pointer',
-  fontFamily: 'var(--font-display)',
-  textTransform: 'uppercase',
-  transition: 'all 0.15s ease',
-  opacity: active ? 1.0 : 0.7,
-});
+const eventBtnStyle = (active: boolean, color: string): React.CSSProperties => {
+  let rgbaStr = '0, 240, 255';
+  if (color === '#ff3366') rgbaStr = '255, 51, 102';
+  else if (color === '#ffaa00') rgbaStr = '255, 170, 0';
+  else if (color === '#ff6600') rgbaStr = '255, 102, 0';
+
+  return {
+    background: active ? `rgba(${rgbaStr}, 0.25)` : 'rgba(5, 8, 16, 0.5)',
+    border: `1.5px solid ${color}`,
+    color: color,
+    padding: '0.4rem 0.8rem',
+    borderRadius: '4px',
+    fontSize: '0.7rem',
+    cursor: 'pointer',
+    fontFamily: 'var(--font-display)',
+    textTransform: 'uppercase',
+    transition: 'all 0.15s ease',
+    opacity: active ? 1.0 : 0.7,
+  };
+};
 
