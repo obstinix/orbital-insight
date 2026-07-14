@@ -6,14 +6,7 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import vignetteChromaticFrag from '../shaders/vignetteChromatic.frag';
 
-/**
- * Creates and configures the WebGL/WebGPU renderer.
- * 
- * - Detects WebGPU availability (falls back to WebGL 2.0)
- * - Enables antialiasing, ACES Filmic Tone Mapping, and Soft Shadow Maps
- * - Restricts pixel ratio to a maximum of 2x for performance
- * - Sets up a ResizeObserver to automatically adjust dimensions
- */
+
 export function createRenderer(canvas: HTMLCanvasElement): THREE.WebGLRenderer {
   const isWebGPUSupported = typeof navigator !== 'undefined' && 'gpu' in navigator;
   console.log(`[Renderer] WebGPU support: ${isWebGPUSupported ? 'Available' : 'Unavailable'}. Using WebGL 2.0 Renderer.`);
